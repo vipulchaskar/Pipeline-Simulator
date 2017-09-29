@@ -43,6 +43,6 @@ public class Main {
         //CodeMemory.printCodeLines();
 
         Pipeline.Setup();
-        Pipeline.Simulate(27);
+        Pipeline.Simulate(31);
     }
 }

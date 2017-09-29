@@ -12,13 +12,13 @@ public class EXStage {
 
     public void execute() {
         if (stalled || inputInstruction == null) {
-            System.out.println("EX stage exiting...");
+            //System.out.println("EX stage exiting...");
             outputInstruction = null;
             return;
         }
 
         //Fetch new instruction
-        System.out.println("EX stage in execution, received instruction: " + inputInstruction.getInsString());
+        //System.out.println("EX stage in execution, received instruction: " + inputInstruction.getInsString());
 
         switch (inputInstruction.getOpCode()) {
             case ADD:

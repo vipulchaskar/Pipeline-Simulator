@@ -20,13 +20,13 @@ public class FStage {
 
     public void execute() {
         if (stalled) {
-            System.out.println("FStage is stalled. returning...");
+            //System.out.println("FStage is stalled. returning...");
             return;
         }
 
         //Fetch new instruction
         CodeLine cl = CodeMemory.getInstruction(nextInstAddress);
-        System.out.println("FStage fetched instruction " + cl.getInsString() + " from address " + cl.getAddress() + "!");
+        //System.out.println("FStage fetched instruction " + cl.getInsString() + " from address " + cl.getAddress() + "!");
 
         InstructionInfo ii = new InstructionInfo(cl.getInsString(), cl.getAddress(), nextInstAddress+1);
 

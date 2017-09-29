@@ -7,6 +7,7 @@ public class DRFStage {
     public InstructionInfo inputInstruction;
     public InstructionInfo outputInstruction;
     private FStage fs;
+
     public boolean stalled;
 
     public DRFStage(FStage fsref) {
@@ -22,7 +23,7 @@ public class DRFStage {
         }
 
         if (! inputInstruction.isDecoded()) {
-            System.out.println("About to decode the instruction:" + inputInstruction.getInsString());
+            //System.out.println("About to decode the instruction:" + inputInstruction.getInsString());
             // Split the instruction
             String[] parts = inputInstruction.getInsString().split(" ");
             // Remove commas
@@ -192,12 +193,13 @@ public class DRFStage {
         boolean DRegFree = (inputInstruction.getdRegAddr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getdRegAddr()));
         boolean SReg1Free = (inputInstruction.getsReg1Addr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getsReg1Addr()));
         boolean SReg2Free = (inputInstruction.getsReg2Addr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getsReg2Addr()));
-        System.out.println(String.valueOf(DRegFree) + " " + String.valueOf(SReg1Free) + " " + String.valueOf(SReg2Free));
+        //System.out.println(String.valueOf(DRegFree) + " " + String.valueOf(SReg1Free) + " " + String.valueOf(SReg2Free));
 
         if (DRegFree && SReg1Free && SReg2Free) {
             // Interlocking logic satisfied.
-            System.out.println("Interlocking logic satisfied.");
-            fs.setStalled(false);
+            //System.out.println("Interlocking logic satisfied.");
+            //fs.setStalled(false);
+            stalled = false;
             // So, the instruction is ready to go ahead.Fetch the register values
             switch (inputInstruction.getOpCode()) {
                 case ADD:
@@ -292,10 +294,11 @@ public class DRFStage {
         }
         else {
             // Interlocking logic not satisfied. Still waiting for registers to free.
-            System.out.println("Interlocking logic not satisified.");
+            //System.out.println("Interlocking logic not satisified.");
+            stalled = true;
             //System.out.println(String.valueOf(DRegFree) + " " + String.valueOf(SReg1Free) + " " + String.valueOf(SReg2Free));
             outputInstruction = null;
-            fs.setStalled(true);
+            //fs.setStalled(true);
         }
 
         /*System.out.println("Now printing: ");
@@ -321,5 +324,14 @@ public class DRFStage {
         }
         return "I" + String.valueOf(inputInstruction.getSequenceNo());
     }
+
+    public boolean isStalled() {
+        return stalled;
+    }
+
+    public void setStalled(boolean stalled) {
+        this.stalled = stalled;
+    }
+
 
 }

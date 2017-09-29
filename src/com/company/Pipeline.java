@@ -27,20 +27,27 @@ public class Pipeline {
                 return;
             }
 
-            System.out.println("Cycle " + String.valueOf(i) + " started...");
-
-            fs.execute();
-
-            drfs.execute();
-
-            exs.execute();
-
-            mems.execute();
+            //System.out.println("Cycle " + String.valueOf(i) + " started...");
 
             wbs.execute();
 
+            mems.execute();
+
+            exs.execute();
+
+            drfs.execute();
+
+            fs.execute();
+
             System.out.println(fs.getCurInstr() + " | " + drfs.getCurInstr() + " | " + exs.getCurInstr() + " | " +
                     mems.getCurInstr() + " | " + wbs.getCurInstr() + " |");
+
+            if (drfs.isStalled()) {
+                fs.setStalled(true);
+            }
+            else {
+                fs.setStalled(false);
+            }
 
             if (! fs.isStalled())
                 drfs.inputInstruction = fs.outputInstruction;

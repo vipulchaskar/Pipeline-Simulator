@@ -49,7 +49,7 @@ public class WBStage {
             case MOVC:
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getLiteral());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
-                System.out.println("Register " + String.valueOf(inputInstruction.getdRegAddr()) + " set free.");
+                //System.out.println("Register " + String.valueOf(inputInstruction.getdRegAddr()) + " set free.");
                 break;
 
             case AND:
