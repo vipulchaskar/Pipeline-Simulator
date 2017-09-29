@@ -1,0 +1,157 @@
+package com.company;
+
+import com.company.Commons.*;
+
+public class InstructionInfo {
+
+    private int PC;
+    private int instrSequenceNo;
+    private String insString;
+    private I opCode;
+    private int sReg1Addr, sReg1Val;
+    private int sReg2Addr, sReg2Val;
+    private int dRegAddr, dRegVal;
+    private int intermResult;
+    private int memAddr, memData;
+    private int literal;
+    private boolean decoded; // TODO: I don't know if this will be required. just keeping it for now.
+
+    public InstructionInfo(String insString, int PC, int insSeqNo) {
+        this.insString = insString;
+        this.PC = PC;
+        this.instrSequenceNo = insSeqNo;
+
+        decoded = false;
+
+        // Initialize the values to some initial state. -1 cannot be an address. Hence, initializing these values to -1.
+        // We should check this register address and confirm that it is not -1 before trying to read the value of that
+        // register.
+        sReg1Addr = -1;
+        sReg2Addr = -1;
+        dRegAddr = -1;
+        memAddr = -1;
+        literal = -1;  // TODO: I know this is wrong. But keeping for now.
+        intermResult = -1;  // TODO: I know this is wrong. But keeping for now.
+    }
+
+    public int getPC() {
+        return PC;
+    }
+
+    public void setPC(int PC) {
+        this.PC = PC;
+    }
+
+    public String getInsString() {
+        return insString;
+    }
+
+    public void setInsString(String insString) {
+        this.insString = insString;
+    }
+
+    public I getOpCode() {
+        return opCode;
+    }
+
+    public void setOpCode(I opCode) {
+        this.opCode = opCode;
+    }
+
+    public int getsReg1Addr() {
+        return sReg1Addr;
+    }
+
+    public void setsReg1Addr(int sReg1Addr) {
+        this.sReg1Addr = sReg1Addr;
+    }
+
+    public int getsReg1Val() {
+        return sReg1Val;
+    }
+
+    public void setsReg1Val(int sReg1Val) {
+        this.sReg1Val = sReg1Val;
+    }
+
+    public int getsReg2Addr() {
+        return sReg2Addr;
+    }
+
+    public void setsReg2Addr(int sReg2Addr) {
+        this.sReg2Addr = sReg2Addr;
+    }
+
+    public int getsReg2Val() {
+        return sReg2Val;
+    }
+
+    public void setsReg2Val(int sReg2Val) {
+        this.sReg2Val = sReg2Val;
+    }
+
+    public int getdRegAddr() {
+        return dRegAddr;
+    }
+
+    public void setdRegAddr(int dRegAddr) {
+        this.dRegAddr = dRegAddr;
+    }
+
+    public int getdRegVal() {
+        return dRegVal;
+    }
+
+    public void setdRegVal(int dRegVal) {
+        this.dRegVal = dRegVal;
+    }
+
+    public int getMemAddr() {
+        return memAddr;
+    }
+
+    public void setMemAddr(int memAddr) {
+        this.memAddr = memAddr;
+    }
+
+    public int getMemData() {
+        return memData;
+    }
+
+    public void setMemData(int memData) {
+        this.memData = memData;
+    }
+
+    public int getLiteral() {
+        return literal;
+    }
+
+    public void setLiteral(int literal) {
+        this.literal = literal;
+    }
+
+    public boolean isDecoded() {
+        return decoded;
+    }
+
+    public void setDecoded(boolean decoded) {
+        this.decoded = decoded;
+    }
+
+    public int getIntermResult() {
+        return intermResult;
+    }
+
+    public void setIntermResult(int intermResult) {
+        this.intermResult = intermResult;
+    }
+
+    public int getSequenceNo() {
+        return instrSequenceNo;
+    }
+
+    public void setSequenceNo(int instrSequenceNo) {
+        this.instrSequenceNo = instrSequenceNo;
+    }
+
+}
