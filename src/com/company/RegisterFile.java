@@ -7,6 +7,7 @@ public class RegisterFile {
     public static ArrayList<Register> registers = new ArrayList<>();
 
     public static void SetupRegisters() {
+        registers = new ArrayList<>();
 
         for (int i = 0; i < Commons.totalRegisters; i++) {
             registers.add(i, new Register());

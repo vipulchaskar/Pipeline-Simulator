@@ -9,11 +9,11 @@ public class Commons {
     public static final int totalRegisters = 16;
 
     public enum I {
-        //TODO: Add DIV instruction?
         ADD,
         SUB,
         ADDC,
         MUL,
+        DIV,
         LOAD,
         STORE,
         MOVC,

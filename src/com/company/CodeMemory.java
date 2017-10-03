@@ -20,6 +20,9 @@ public class CodeMemory {
     }
 
     public static boolean readFromFile(String fileName) {
+
+        codeLines = new ArrayList<>();
+
         String aLine;
 
         try {

@@ -3,7 +3,11 @@ package com.company;
 public class DataMemory {
 
     private static int baseAddress = Commons.dataBaseAddress;
-    private static int [] dataArray = new int[Commons.dataTotalLocations];
+    private static int [] dataArray;
+
+    public static void initialize() {
+        dataArray = new int[Commons.dataTotalLocations];
+    }
 
     public static void writeToMemory(int value, int address) {
 

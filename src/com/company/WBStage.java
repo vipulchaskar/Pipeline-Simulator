@@ -19,21 +19,54 @@ public class WBStage {
 
         switch (inputInstruction.getOpCode()) {
             case ADD:
+                //System.out.println("In case of add, writing " + String.valueOf(inputInstruction.getIntermResult()) +
+                //" to register " + inputInstruction.getdRegAddr());
+                if (inputInstruction.getIntermResult() == 0) {
+                    Flags.setZero(true);
+                    System.out.println("Zero flag set by ADD instruction!");
+                }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case SUB:
+                //System.out.println("In case of subtract, writing " + String.valueOf(inputInstruction.getIntermResult()) +
+                //        " to register " + inputInstruction.getdRegAddr());
+                if (inputInstruction.getIntermResult() == 0) {
+                    Flags.setZero(true);
+                    System.out.println("Zero flag set by SUB instruction!");
+                }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case ADDC:
+                if (inputInstruction.getIntermResult() == 0) {
+                    Flags.setZero(true);
+                    System.out.println("Zero flag set by ADDC instruction!");
+                }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case MUL:
+                if (inputInstruction.getIntermResult() == 0) {
+                    Flags.setZero(true);
+                    System.out.println("Zero flag set by MUL instruction!");
+                }
+                //System.out.println("In case of multiply, writing " + String.valueOf(inputInstruction.getIntermResult()) +
+                //        " to register " + inputInstruction.getdRegAddr());
+                RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
+                RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
+                break;
+
+            case DIV:
+                if (inputInstruction.getIntermResult() == 0) {
+                    Flags.setZero(true);
+                    System.out.println("Zero flag set by DIV instruction!");
+                }
+                //System.out.println("In case of divide, writing " + String.valueOf(inputInstruction.getIntermResult()) +
+                //        " to register " + inputInstruction.getdRegAddr());
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;

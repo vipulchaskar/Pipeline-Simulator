@@ -2,6 +2,8 @@ package com.company;
 
 import com.company.Commons.*;
 
+import java.nio.channels.Pipe;
+
 public class DRFStage {
 
     public InstructionInfo inputInstruction;
@@ -17,7 +19,7 @@ public class DRFStage {
 
 
     public void execute() {
-        if (inputInstruction == null) {
+        if (inputInstruction == null || Pipeline.IsBranching() || Pipeline.isHalted()) {
             outputInstruction = null;
             return;
         }
@@ -40,6 +42,8 @@ public class DRFStage {
                 inputInstruction.setOpCode(I.ADDC);
             } else if (parts[0].equals("MUL")) {
                 inputInstruction.setOpCode(I.MUL);
+            } else if (parts[0].equals("DIV")) {
+                inputInstruction.setOpCode(I.DIV);
             } else if (parts[0].equals("LOAD")) {
                 inputInstruction.setOpCode(I.LOAD);
             } else if (parts[0].equals("STORE")) {
@@ -99,6 +103,17 @@ public class DRFStage {
                     break;
 
                 case MUL:
+                    inputInstruction.setdRegAddr(getRegAddrFromInsPart(parts[1]));
+                    inputInstruction.setsReg1Addr(getRegAddrFromInsPart(parts[2]));
+                    if (parts[3].charAt(0) == '#') {
+                        inputInstruction.setLiteral(getLiteralFromLitPart(parts[3]));
+                    } else {
+                        inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
+                    }
+                    inputInstruction.setDecoded(true);
+                    break;
+
+                case DIV:
                     inputInstruction.setdRegAddr(getRegAddrFromInsPart(parts[1]));
                     inputInstruction.setsReg1Addr(getRegAddrFromInsPart(parts[2]));
                     if (parts[3].charAt(0) == '#') {
@@ -175,7 +190,7 @@ public class DRFStage {
                     break;
 
                 case HALT:
-                    // TODO: Set the halt logic here.
+                    Pipeline.setHalted(true);
                     inputInstruction.setDecoded(true);
                     break;
 
@@ -231,6 +246,15 @@ public class DRFStage {
                     }
                     break;
 
+                case DIV:
+                    RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
+                    inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
+                    if (inputInstruction.getsReg2Addr() != -1) {
+                        inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
+                    }
+                    break;
+
+
                 case LOAD:
                     RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
                     inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
@@ -242,6 +266,8 @@ public class DRFStage {
                     break;
 
                 case MOVC:
+                    //System.out.println("Here, instruction " + inputInstruction.getInsString() + " has locked the register " +
+                    //inputInstruction.getdRegAddr());
                     RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
                     break;
 
@@ -294,7 +320,7 @@ public class DRFStage {
         }
         else {
             // Interlocking logic not satisfied. Still waiting for registers to free.
-            //System.out.println("Interlocking logic not satisified.");
+            //System.out.println("Interlocking logic not satisfied for instruction " + inputInstruction.getInsString());
             stalled = true;
             //System.out.println(String.valueOf(DRegFree) + " " + String.valueOf(SReg1Free) + " " + String.valueOf(SReg2Free));
             outputInstruction = null;

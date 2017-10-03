@@ -1,5 +1,7 @@
 package com.company;
 
+import java.nio.channels.Pipe;
+
 public class FStage {
 
     public InstructionInfo outputInstruction;
@@ -12,14 +14,15 @@ public class FStage {
     }
 
     public void setNextInstAddress(int newNextInstAddress) {
-        // TODO: implement
-        nextInstAddress = newNextInstAddress;
+        int temp = (newNextInstAddress - Commons.codeBaseAddress) / Commons.codeInstructionLength;
+        //System.out.println("Setting " + String.valueOf(temp) + " as new address in Fetch stage.");
+        nextInstAddress = temp;
     }
 
 
 
     public void execute() {
-        if (stalled) {
+        if (stalled || Pipeline.IsBranching() || Pipeline.isHalted()) {
             //System.out.println("FStage is stalled. returning...");
             return;
         }
@@ -28,11 +31,18 @@ public class FStage {
         CodeLine cl = CodeMemory.getInstruction(nextInstAddress);
         //System.out.println("FStage fetched instruction " + cl.getInsString() + " from address " + cl.getAddress() + "!");
 
-        InstructionInfo ii = new InstructionInfo(cl.getInsString(), cl.getAddress(), nextInstAddress+1);
+        if (cl == null) {
+            // Instructions finished.
+            outputInstruction = null;
+        }
+        else {
 
-        nextInstAddress++;
+            InstructionInfo ii = new InstructionInfo(cl.getInsString(), cl.getAddress(), nextInstAddress + 1);
 
-        outputInstruction = ii;
+            nextInstAddress++;
+
+            outputInstruction = ii;
+        }
 
     }
 

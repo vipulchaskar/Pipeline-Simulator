@@ -32,6 +32,9 @@ public class MEMStage {
             case MUL:
                 break;
 
+            case DIV:
+                break;
+
             case LOAD:
                 // TODO: Lol, will this even work? :D
                 inputInstruction.setIntermResult(DataMemory.readFromMemory(inputInstruction.getIntermResult()));

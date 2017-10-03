@@ -53,6 +53,15 @@ public class EXStage {
                 }
                 break;
 
+            case DIV:
+                if (inputInstruction.getsReg2Addr() != -1) {
+                    inputInstruction.setIntermResult(inputInstruction.getsReg1Val() / inputInstruction.getsReg2Val());
+                }
+                else {
+                    inputInstruction.setIntermResult(inputInstruction.getsReg1Val() / inputInstruction.getLiteral());
+                }
+                break;
+
             case LOAD:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
                 break;
@@ -94,11 +103,28 @@ public class EXStage {
 
 
             case BZ:
+                if (Flags.getZero()) {
+                    //System.out.println("Gonna take a branch to address : " + String.valueOf(
+                    //        inputInstruction.getPC() + inputInstruction.getLiteral()));
+                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
+                    // Flags.setZero(false);
+                }
+                break;
+
             case BNZ:
+                if ( ! Flags.getZero()) {
+                    //System.out.println("Gonna take a branch to address : " + String.valueOf(
+                    //        inputInstruction.getPC() + inputInstruction.getLiteral()));
+                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
+                    // Flags.setZero(false);
+                }
                 break;
 
             case JUMP:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
+                //System.out.println("Gonna take a branch to address : " + String.valueOf(inputInstruction.getIntermResult()));
+                // TODO: Clarify this.
+                Pipeline.TakeBranch(Commons.codeBaseAddress + inputInstruction.getIntermResult());
                 break;
 
             case HALT:

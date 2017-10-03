@@ -1,11 +1,59 @@
 package com.company;
 
+import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        RegisterFile.SetupRegisters();
+        int choice = 0;
+        Scanner in = new Scanner(System.in);
+
+        if (args.length != 1) {
+            System.out.println("Please pass a file name as input.");
+            System.exit(1);
+        }
+
+
+        while (choice != 4) {
+            System.out.println("\nMenu:");
+            System.out.println("(input file: " + args[0] + ")");
+            System.out.println("1. Initialize");
+            System.out.println("2. Simulate");
+            System.out.println("3. Display");
+            System.out.println("4. Exit");
+            System.out.println("Please enter your choice: ");
+
+            choice = in.nextInt();
+
+            switch (choice) {
+                case 1:
+                    RegisterFile.SetupRegisters();
+                    CodeMemory.readFromFile(args[0]);
+                    //CodeMemory.printCodeLines();
+                    DataMemory.initialize();
+                    Pipeline.Setup();
+                    System.out.println("Initialization successful.");
+                    break;
+
+                case 2:
+                    System.out.println("Enter the number of cycles to simulate: ");
+                    int cycles = in.nextInt();
+                    Pipeline.Simulate(cycles);
+                    break;
+
+                case 3:
+                    System.out.println("Option not implemented. Please check back soon.");
+                    break;
+
+                case 4:
+                    break;
+
+                default:
+                    System.out.println("Your input was not understood. Please enter again.");
+            }
+        }
+
 
         // TEST CODE----------------
         /*DataMemory.writeToMemory(100, 0);
@@ -39,10 +87,5 @@ public class Main {
         assert(Flags.getZero());*/
         // TEST CODE END-------------
 
-        CodeMemory.readFromFile("test.txt");
-        //CodeMemory.printCodeLines();
-
-        Pipeline.Setup();
-        Pipeline.Simulate(31);
     }
 }

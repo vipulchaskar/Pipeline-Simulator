@@ -3,6 +3,8 @@ package com.company;
 public class Pipeline {
 
     private static boolean halted = false;
+    private static boolean branch = false;
+    private static int targetAddress;
     private static FStage fs;
     private static DRFStage drfs;
     private static EXStage exs;
@@ -15,17 +17,36 @@ public class Pipeline {
         exs = new EXStage();
         mems = new MEMStage();
         wbs = new WBStage();
+        halted = false;
+        branch = false;
+    }
+
+    public static void TakeBranch(int newTargetAddress) {
+        branch = true;
+        targetAddress = newTargetAddress;
+    }
+
+    public static boolean IsBranching() {
+        return branch;
+    }
+
+    public static boolean isHalted() {
+        return halted;
+    }
+
+    public static void setHalted(boolean halted) {
+        Pipeline.halted = halted;
     }
 
 
     public static void Simulate(int clockCycles) {
 
-        System.out.println("F   | DRF   | EX   | MEM   | WB    |");
+        System.out.println(" F  | DRF|  EX| MEM|  WB|");
         for (int i = 1; i <= clockCycles; i++) {
-            if (halted) {
-                System.out.println("Pipeline is halted!");
-                return;
-            }
+            //if (halted) {
+            //    System.out.println("Pipeline is halted!");
+            //    return;
+            //}
 
             //System.out.println("Cycle " + String.valueOf(i) + " started...");
 
@@ -39,14 +60,27 @@ public class Pipeline {
 
             fs.execute();
 
-            System.out.println(fs.getCurInstr() + " | " + drfs.getCurInstr() + " | " + exs.getCurInstr() + " | " +
-                    mems.getCurInstr() + " | " + wbs.getCurInstr() + " |");
+            System.out.println(String.format("%1$4s", fs.getCurInstr()) + "|" + String.format("%1$4s", drfs.getCurInstr())
+                    + "|" + String.format("%1$4s", exs.getCurInstr()) + "|" + String.format("%1$4s", mems.getCurInstr())
+                    + "|" + String.format("%1$4s", wbs.getCurInstr()) + "|");
 
             if (drfs.isStalled()) {
                 fs.setStalled(true);
             }
             else {
                 fs.setStalled(false);
+            }
+
+            if (branch) {
+                drfs.outputInstruction = null;
+                fs.outputInstruction = null;
+                fs.setNextInstAddress(targetAddress);
+                branch = false;
+            }
+
+            if (halted) {
+                drfs.outputInstruction = null;
+                fs.outputInstruction = null;
             }
 
             if (! fs.isStalled())
