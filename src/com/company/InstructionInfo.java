@@ -15,6 +15,9 @@ public class InstructionInfo {
     private int memAddr, memData;
     private int literal;
     private boolean decoded; // TODO: I don't know if this will be required. just keeping it for now.
+    private boolean isGonnaSetFlags;
+    private boolean flagConsumer;
+    private boolean registersFetched;
 
     public InstructionInfo(String insString, int PC, int insSeqNo) {
         this.insString = insString;
@@ -22,6 +25,7 @@ public class InstructionInfo {
         this.instrSequenceNo = insSeqNo;
 
         decoded = false;
+        registersFetched = false;
 
         // Initialize the values to some initial state. -1 cannot be an address. Hence, initializing these values to -1.
         // We should check this register address and confirm that it is not -1 before trying to read the value of that
@@ -152,6 +156,30 @@ public class InstructionInfo {
 
     public void setSequenceNo(int instrSequenceNo) {
         this.instrSequenceNo = instrSequenceNo;
+    }
+
+    public void setIsGonnaSetFlags(boolean newValue) {
+        this.isGonnaSetFlags = newValue;
+    }
+
+    public boolean getIsGonnaSetFlags() {
+        return isGonnaSetFlags;
+    }
+
+    public boolean isFlagConsumer() {
+        return flagConsumer;
+    }
+
+    public void setFlagConsumer(boolean flagConsumer) {
+        this.flagConsumer = flagConsumer;
+    }
+
+    public boolean isRegistersFetched() {
+        return registersFetched;
+    }
+
+    public void setRegistersFetched(boolean registersFetched) {
+        this.registersFetched = registersFetched;
     }
 
 }

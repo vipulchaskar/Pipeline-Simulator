@@ -6,30 +6,30 @@ public class FStage {
 
     public InstructionInfo outputInstruction;
     public boolean stalled;
+    public boolean exStalled;
     private int nextInstAddress;
 
     public FStage() {
         nextInstAddress = 0;
         stalled = false;
+        exStalled = false;
     }
 
     public void setNextInstAddress(int newNextInstAddress) {
         int temp = (newNextInstAddress - Commons.codeBaseAddress) / Commons.codeInstructionLength;
-        //System.out.println("Setting " + String.valueOf(temp) + " as new address in Fetch stage.");
         nextInstAddress = temp;
     }
 
 
 
     public void execute() {
-        if (stalled || Pipeline.IsBranching() || Pipeline.isHalted()) {
+        if (stalled || exStalled || Pipeline.IsBranching() || Pipeline.isHalted()) {
             //System.out.println("FStage is stalled. returning...");
             return;
         }
 
         //Fetch new instruction
         CodeLine cl = CodeMemory.getInstruction(nextInstAddress);
-        //System.out.println("FStage fetched instruction " + cl.getInsString() + " from address " + cl.getAddress() + "!");
 
         if (cl == null) {
             // Instructions finished.
@@ -60,5 +60,21 @@ public class FStage {
         }
         return "I" + String.valueOf(outputInstruction.getSequenceNo());
     }
+
+    public String getCurInstrString() {
+        if (outputInstruction == null) {
+            return "-";
+        }
+        return outputInstruction.getInsString();
+    }
+
+    public boolean isExStalled() {
+        return exStalled;
+    }
+
+    public void setExStalled(boolean exStalled) {
+        this.exStalled = exStalled;
+    }
+
 
 }

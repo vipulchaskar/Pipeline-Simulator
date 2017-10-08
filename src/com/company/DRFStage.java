@@ -2,8 +2,6 @@ package com.company;
 
 import com.company.Commons.*;
 
-import java.nio.channels.Pipe;
-
 public class DRFStage {
 
     public InstructionInfo inputInstruction;
@@ -11,9 +9,11 @@ public class DRFStage {
     private FStage fs;
 
     public boolean stalled;
+    public boolean exStalled;
 
     public DRFStage(FStage fsref) {
         stalled = false;
+        exStalled = false;
         fs = fsref;
     }
 
@@ -25,13 +25,19 @@ public class DRFStage {
         }
 
         if (! inputInstruction.isDecoded()) {
-            //System.out.println("About to decode the instruction:" + inputInstruction.getInsString());
             // Split the instruction
-            String[] parts = inputInstruction.getInsString().split(" ");
-            // Remove commas
-            for (int i = 0; i < parts.length; i++) {
-                parts[i] = parts[i].replaceAll(",", "");
-            }
+            char splitDelimeter;
+            if (inputInstruction.getInsString().contains(" "))
+                splitDelimeter = ' ';
+            else
+                splitDelimeter = ',';
+
+            String[] parts = inputInstruction.getInsString().split(String.valueOf(splitDelimeter));
+            // Remove commas, if needed
+            if (splitDelimeter == ' ')
+                for (int i = 0; i < parts.length; i++) {
+                    parts[i] = parts[i].replaceAll(",", "");
+                }
 
             // Populate the decoded instruction opcode
             if (parts[0].equals("ADD")) {
@@ -62,7 +68,7 @@ public class DRFStage {
                 inputInstruction.setOpCode(I.AND);
             } else if (parts[0].equals("OR")) {
                 inputInstruction.setOpCode(I.OR);
-            } else if (parts[0].equals("XOR")) {
+            } else if (parts[0].equals("XOR") || parts[0].equals("EXOR")) {
                 inputInstruction.setOpCode(I.XOR);
             } else if (parts[0].equals("NOOP")) {
                 inputInstruction.setOpCode(I.NOOP);
@@ -81,6 +87,11 @@ public class DRFStage {
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
                     }
+                    // This is an arithmetic instruction. Evaporate the capability of instructions already in pipeline
+                    // to set the flags.
+                    // Thou shalt set no more flags :D
+                    Pipeline.RemoveFlagSettingCapability();
+                    inputInstruction.setIsGonnaSetFlags(true);
                     inputInstruction.setDecoded(true);
                     break;
 
@@ -92,6 +103,11 @@ public class DRFStage {
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
                     }
+                    // This is an arithmetic instruction. Evaporate the capability of instructions already in pipeline
+                    // to set the flags.
+                    // Thou shalt set no more flags :D
+                    Pipeline.RemoveFlagSettingCapability();
+                    inputInstruction.setIsGonnaSetFlags(true);
                     inputInstruction.setDecoded(true);
                     break;
 
@@ -110,6 +126,11 @@ public class DRFStage {
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
                     }
+                    // This is an arithmetic instruction. Evaporate the capability of instructions already in pipeline
+                    // to set the flags.
+                    // Thou shalt set no more flags :D
+                    Pipeline.RemoveFlagSettingCapability();
+                    inputInstruction.setIsGonnaSetFlags(true);
                     inputInstruction.setDecoded(true);
                     break;
 
@@ -121,6 +142,11 @@ public class DRFStage {
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
                     }
+                    // This is an arithmetic instruction. Evaporate the capability of instructions already in pipeline
+                    // to set the flags.
+                    // Thou shalt set no more flags :D
+                    Pipeline.RemoveFlagSettingCapability();
+                    inputInstruction.setIsGonnaSetFlags(true);
                     inputInstruction.setDecoded(true);
                     break;
 
@@ -180,6 +206,7 @@ public class DRFStage {
                 case BZ:
                 case BNZ:
                     inputInstruction.setLiteral(getLiteralFromLitPart(parts[1]));
+                    inputInstruction.setFlagConsumer(true);
                     inputInstruction.setDecoded(true);
                     break;
 
@@ -204,134 +231,139 @@ public class DRFStage {
             }
         }
 
-        // Interlocking logic
-        boolean DRegFree = (inputInstruction.getdRegAddr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getdRegAddr()));
-        boolean SReg1Free = (inputInstruction.getsReg1Addr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getsReg1Addr()));
-        boolean SReg2Free = (inputInstruction.getsReg2Addr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getsReg2Addr()));
-        //System.out.println(String.valueOf(DRegFree) + " " + String.valueOf(SReg1Free) + " " + String.valueOf(SReg2Free));
+        if (! inputInstruction.isRegistersFetched()) {
+            // Interlocking logic
+            boolean DRegFree = (inputInstruction.getdRegAddr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getdRegAddr()));
+            boolean SReg1Free = (inputInstruction.getsReg1Addr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getsReg1Addr()));
+            boolean SReg2Free = (inputInstruction.getsReg2Addr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getsReg2Addr()));
+            boolean FlagsAvailable = (!inputInstruction.isFlagConsumer() || !Flags.getBusy());
 
-        if (DRegFree && SReg1Free && SReg2Free) {
-            // Interlocking logic satisfied.
-            //System.out.println("Interlocking logic satisfied.");
-            //fs.setStalled(false);
-            stalled = false;
-            // So, the instruction is ready to go ahead.Fetch the register values
-            switch (inputInstruction.getOpCode()) {
-                case ADD:
-                    RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
-                    inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
-                    if (inputInstruction.getsReg2Addr() != -1) {
+            //System.out.println("Destination register address: " + String.valueOf(inputInstruction.getdRegAddr()));
+            //System.out.println("Destination register available? " + String.valueOf(RegisterFile.GetRegisterStatus(inputInstruction.getdRegAddr())));
+            if (DRegFree && SReg1Free && SReg2Free && FlagsAvailable) {
+                // Interlocking logic satisfied.
+                //System.out.println("Interlocking logic satisfied.");
+                stalled = false;
+
+                // So, the instruction is ready to go ahead.Fetch the register values
+                switch (inputInstruction.getOpCode()) {
+                    case ADD:
+                        //System.out.println("Yuhooo! I am locking the register: " + String.valueOf(inputInstruction.getdRegAddr()));
+                        RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
+                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
+                        if (inputInstruction.getsReg2Addr() != -1) {
+                            inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
+                        }
+                        // Arithmetic instruction. Must also mark Flags as busy.
+                        Flags.setBusy(true);
+                        break;
+
+                    case SUB:
+                        RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
+                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
+                        if (inputInstruction.getsReg2Addr() != -1) {
+                            inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
+                        }
+                        // Arithmetic instruction. Must also mark Flags as busy.
+                        Flags.setBusy(true);
+                        break;
+
+                    case ADDC:
+                        RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
+                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
+                        break;
+
+                    case MUL:
+                        RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
+                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
+                        if (inputInstruction.getsReg2Addr() != -1) {
+                            inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
+                        }
+                        // Arithmetic instruction. Must also mark Flags as busy.
+                        Flags.setBusy(true);
+                        break;
+
+                    case DIV:
+                        RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
+                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
+                        if (inputInstruction.getsReg2Addr() != -1) {
+                            inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
+                        }
+                        // Arithmetic instruction. Must also mark Flags as busy.
+                        Flags.setBusy(true);
+                        break;
+
+
+                    case LOAD:
+                        RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
+                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
+                        break;
+
+                    case STORE:
+                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
                         inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
-                    }
-                    break;
+                        break;
 
-                case SUB:
-                    RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
-                    inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
-                    if (inputInstruction.getsReg2Addr() != -1) {
-                        inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
-                    }
-                    break;
+                    case MOVC:
+                        RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
+                        break;
 
-                case ADDC:
-                    RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
-                    inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
-                    break;
+                    case AND:
+                        RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
+                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
+                        if (inputInstruction.getsReg2Addr() != -1) {
+                            inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
+                        }
+                        break;
 
-                case MUL:
-                    RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
-                    inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
-                    if (inputInstruction.getsReg2Addr() != -1) {
-                        inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
-                    }
-                    break;
+                    case OR:
+                        RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
+                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
+                        if (inputInstruction.getsReg2Addr() != -1) {
+                            inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
+                        }
+                        break;
 
-                case DIV:
-                    RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
-                    inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
-                    if (inputInstruction.getsReg2Addr() != -1) {
-                        inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
-                    }
-                    break;
+                    case XOR:
+                        RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
+                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
+                        if (inputInstruction.getsReg2Addr() != -1) {
+                            inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
+                        }
+                        break;
 
+                    case BZ:
+                    case BNZ:
+                        break;
 
-                case LOAD:
-                    RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
-                    inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
-                    break;
+                    case JUMP:
+                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
+                        break;
 
-                case STORE:
-                    inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
-                    inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
-                    break;
+                    case HALT:
+                        break;
 
-                case MOVC:
-                    //System.out.println("Here, instruction " + inputInstruction.getInsString() + " has locked the register " +
-                    //inputInstruction.getdRegAddr());
-                    RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
-                    break;
+                    case NOOP:
+                        break;
 
-                case AND:
-                    RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
-                    inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
-                    if (inputInstruction.getsReg2Addr() != -1) {
-                        inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
-                    }
-                    break;
+                    default:
+                        System.out.println("Error! Unknown instruction opcode found in DRF stage!");
+                        break;
+                }
 
-                case OR:
-                    RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
-                    inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
-                    if (inputInstruction.getsReg2Addr() != -1) {
-                        inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
-                    }
-                    break;
+                inputInstruction.setRegistersFetched(true);
 
-                case XOR:
-                    RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
-                    inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
-                    if (inputInstruction.getsReg2Addr() != -1) {
-                        inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
-                    }
-                    break;
-
-                case BZ:
-                case BNZ:
-                    break;
-
-                case JUMP:
-                    inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
-                    break;
-
-                case HALT:
-                    // TODO: Set the halt logic here.
-                    break;
-
-                case NOOP:
-                    break;
-
-                default:
-                    System.out.println("Error! Unknown instruction opcode found in DRF stage!");
-                    break;
+                // All input operands fetched. Let's give this instruction to output latch.
+                outputInstruction = inputInstruction;
+            } else {
+                // Interlocking logic not satisfied. Still waiting for registers to free.
+                //System.out.println("Interlocking logic not satisfied for instruction " + inputInstruction.getInsString());
+                stalled = true;
+                //System.out.println(String.valueOf(DRegFree) + " " + String.valueOf(SReg1Free) + " " + String.valueOf(SReg2Free) +
+                //        " " + String.valueOf(FlagsAvailable));
+                outputInstruction = null;
             }
-
-            // All input operands fetched. Let's give this instruction to output latch.
-            outputInstruction = inputInstruction;
         }
-        else {
-            // Interlocking logic not satisfied. Still waiting for registers to free.
-            //System.out.println("Interlocking logic not satisfied for instruction " + inputInstruction.getInsString());
-            stalled = true;
-            //System.out.println(String.valueOf(DRegFree) + " " + String.valueOf(SReg1Free) + " " + String.valueOf(SReg2Free));
-            outputInstruction = null;
-            //fs.setStalled(true);
-        }
-
-        /*System.out.println("Now printing: ");
-        for (String part : parts) {
-            System.out.println(part);
-        }*/
-
     }
 
     private int getRegAddrFromInsPart(String part) {
@@ -351,6 +383,13 @@ public class DRFStage {
         return "I" + String.valueOf(inputInstruction.getSequenceNo());
     }
 
+    public String getCurInstrString() {
+        if (inputInstruction == null) {
+            return "-";
+        }
+        return inputInstruction.getInsString();
+    }
+
     public boolean isStalled() {
         return stalled;
     }
@@ -359,5 +398,12 @@ public class DRFStage {
         this.stalled = stalled;
     }
 
+    public boolean isExStalled() {
+        return exStalled;
+    }
+
+    public void setExStalled(boolean exStalled) {
+        this.exStalled = exStalled;
+    }
 
 }

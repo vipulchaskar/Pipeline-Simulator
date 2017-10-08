@@ -16,9 +16,6 @@ public class MEMStage {
             return;
         }
 
-        //Fetch new instruction
-        //System.out.println("MEM stage in execution, received instruction: " + inputInstruction.getInsString());
-
         switch (inputInstruction.getOpCode()) {
             case ADD:
                 break;
@@ -36,7 +33,6 @@ public class MEMStage {
                 break;
 
             case LOAD:
-                // TODO: Lol, will this even work? :D
                 inputInstruction.setIntermResult(DataMemory.readFromMemory(inputInstruction.getIntermResult()));
                 break;
 
@@ -72,11 +68,9 @@ public class MEMStage {
                 break;
 
             default:
-                System.out.println("Error! Unknown instruction opcode found in DRF stage!");
+                System.out.println("Error! Unknown instruction opcode found in MEM stage!");
                 break;
         }
-
-        //System.out.println("MEM finished executing! Instruction it got was : " + inputInstruction.getInsString());
 
         // Let's give this instruction to output latch.
         outputInstruction = inputInstruction;
@@ -88,6 +82,13 @@ public class MEMStage {
             return "-";
         }
         return "I" + String.valueOf(inputInstruction.getSequenceNo());
+    }
+
+    public String getCurInstrString() {
+        if (inputInstruction == null) {
+            return "-";
+        }
+        return inputInstruction.getInsString();
     }
 
 }

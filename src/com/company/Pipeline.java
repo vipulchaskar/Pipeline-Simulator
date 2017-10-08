@@ -42,17 +42,10 @@ public class Pipeline {
         Pipeline.halted = halted;
     }
 
-
     public static void Simulate(int clockCycles) {
 
-        System.out.println(" F  | DRF|  EX|MUL1|MUL2| MEM|  WB|");
+        System.out.println(" F  | DRF|  EX|MUL1|MUL2| MEM|  WB| Cycle no.");
         for (int i = 1; i <= clockCycles; i++) {
-            //if (halted) {
-            //    System.out.println("Pipeline is halted!");
-            //    return;
-            //}
-
-            //System.out.println("Cycle " + String.valueOf(i) + " started...");
 
             wbs.execute();
 
@@ -71,7 +64,7 @@ public class Pipeline {
             System.out.println(String.format("%1$4s", fs.getCurInstr()) + "|" + String.format("%1$4s", drfs.getCurInstr())
                     + "|" + String.format("%1$4s", exs.getCurInstr()) + "|" + String.format("%1$4s", mul1s.getCurInstr())
                     + "|" + String.format("%1$4s", mul2s.getCurInstr()) + "|" + String.format("%1$4s", mems.getCurInstr())
-                    + "|" + String.format("%1$4s", wbs.getCurInstr()) + "|");
+                    + "|" + String.format("%1$4s", wbs.getCurInstr()) + "|   " + String.valueOf(i));
 
             if (drfs.isStalled()) {
                 fs.setStalled(true);
@@ -88,7 +81,7 @@ public class Pipeline {
             }
 
             if (halted) {
-                drfs.outputInstruction = null;
+                //drfs.outputInstruction = null;
                 fs.outputInstruction = null;
             }
 
@@ -103,18 +96,15 @@ public class Pipeline {
                 mems.inputInstruction = mul2s.outputInstruction;
                 mul2s.outputInstruction = null;
             } else if (mul2s.outputInstruction == null && exs.outputInstruction != null) {
+                exs.setStalled(false);
                 mems.inputInstruction = exs.outputInstruction;
                 exs.outputInstruction = null;
             } else {
-                // Collision!
-                if (mul2s.outputInstruction.getPC() < exs.outputInstruction.getPC()) {
-                    mems.inputInstruction = mul2s.outputInstruction;
-                    mul2s.outputInstruction = null;
-                }
-                else {
-                    mems.inputInstruction = exs.outputInstruction;
-                    exs.outputInstruction = null;
-                }
+                // Collision! Give preference to MUL instructions
+                mems.inputInstruction = mul2s.outputInstruction;
+                mul2s.outputInstruction = null;
+                // Now stall EX and things before it.
+                exs.setStalled(true);
             }
 
             // MUL2 <-- MUL1
@@ -125,26 +115,83 @@ public class Pipeline {
             if (drfs.outputInstruction != null) {
 
                 if ((drfs.outputInstruction.getOpCode() == Commons.I.MUL
-                        || drfs.outputInstruction.getOpCode() == Commons.I.DIV)
+                        || drfs.outputInstruction.getOpCode() == Commons.I.DIV
+                        || drfs.outputInstruction.getOpCode() == Commons.I.HALT)
                         && mul1s.inputInstruction != drfs.outputInstruction) {
 
                     mul1s.inputInstruction = drfs.outputInstruction;
                     exs.inputInstruction = null;
 
                 } else if (exs.inputInstruction != drfs.outputInstruction) {
+                    if ( ! exs.isStalled()) {
+                        drfs.setExStalled(false);
                         exs.inputInstruction = drfs.outputInstruction;
+                    }
+                    else
+                        drfs.setExStalled(true);
                     mul1s.inputInstruction = null;
                 }
             }
             else {
                 // This will create problems if they're stalled!
                 mul1s.inputInstruction = null;
-                exs.inputInstruction = null;
+                if (! exs.isStalled())
+                    exs.inputInstruction = null;
             }
 
             // DRF <-- F
-            if (! fs.isStalled())
+            if (drfs.isExStalled())
+                fs.setExStalled(true);
+            else
+                fs.setExStalled(false);
+
+            if (! fs.isStalled() && ! fs.isExStalled())
                 drfs.inputInstruction = fs.outputInstruction;
         }
+    }
+
+    public static void RemoveFlagSettingCapability() {
+        if (exs.inputInstruction != null)
+            exs.inputInstruction.setIsGonnaSetFlags(false);
+
+        if (mul1s.inputInstruction != null)
+            mul1s.inputInstruction.setIsGonnaSetFlags(false);
+
+        if (mul2s.inputInstruction != null)
+            mul2s.inputInstruction.setIsGonnaSetFlags(false);
+
+        if (mems.inputInstruction != null)
+            mems.inputInstruction.setIsGonnaSetFlags(false);
+
+        if (wbs.inputInstruction != null)
+            wbs.inputInstruction.setIsGonnaSetFlags(false);
+
+    }
+
+    public static void Display() {
+        System.out.println("\nContents of Pipeline stages:");
+        System.out.println("F stage : " + fs.getCurInstr() + " | " + fs.getCurInstrString());
+        System.out.println("DRF stage : " + drfs.getCurInstr() + " | " + drfs.getCurInstrString());
+        System.out.println("EX stage : " + exs.getCurInstr() + " | " + exs.getCurInstrString());
+        System.out.println("MUL1 stage : " + mul1s.getCurInstr() + " | " + mul1s.getCurInstrString());
+        System.out.println("MUL2 stage : " + mul2s.getCurInstr() + " | " + mul2s.getCurInstrString());
+        System.out.println("MEM stage : " + mems.getCurInstr() + " | " + mems.getCurInstrString());
+        System.out.println("WB stage : " + wbs.getCurInstr() + " | " + wbs.getCurInstrString());
+
+        System.out.println("----------------------------------");
+
+        System.out.println("Registers:");
+        for (int i = 0; i < Commons.totalRegisters; i++) {
+            System.out.println("R" + String.valueOf(i) + ": " + String.valueOf(RegisterFile.ReadFromRegister(i)));
+        }
+
+        System.out.println("----------------------------------");
+
+        System.out.println("Memory locations:");
+        for (int i = 0; i < 100; i++) {
+            System.out.println("Mem[" + String.valueOf(i) + "] = " + String.valueOf(DataMemory.readFromMemory(i*Commons.dataAddressLength)));
+        }
+
+        System.out.println("----------------------------------");
     }
 }

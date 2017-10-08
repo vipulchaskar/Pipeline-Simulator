@@ -30,7 +30,6 @@ public class Main {
                 case 1:
                     RegisterFile.SetupRegisters();
                     CodeMemory.readFromFile(args[0]);
-                    //CodeMemory.printCodeLines();
                     DataMemory.initialize();
                     Pipeline.Setup();
                     System.out.println("Initialization successful.");
@@ -43,7 +42,7 @@ public class Main {
                     break;
 
                 case 3:
-                    System.out.println("Option not implemented. Please check back soon.");
+                    Pipeline.Display();
                     break;
 
                 case 4:

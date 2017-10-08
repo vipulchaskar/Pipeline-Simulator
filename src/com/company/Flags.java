@@ -5,6 +5,7 @@ public class Flags {
     private static boolean zero = false;
     private static boolean carry = false;
     private static boolean negative = false;
+    private static boolean busy = false;
 
     public static boolean getZero() {
         return zero;
@@ -29,4 +30,8 @@ public class Flags {
     public static void setNegative(boolean negative) {
         Flags.negative = negative;
     }
+
+    public static boolean getBusy() { return busy; }
+
+    public static void setBusy(boolean newBusy) { Flags.busy = newBusy; }
 }

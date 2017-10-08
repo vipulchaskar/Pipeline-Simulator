@@ -12,7 +12,7 @@ public class CodeMemory {
 
     public static CodeLine getInstruction(int offset) {
         if (offset < 0 || offset >= codeLines.size()) {
-            System.out.println("Error! Instruction not present at the given address: " + offset);
+            //System.out.println("Error! Instruction not present at the given address: " + offset);
             return null;
         }
 
@@ -32,7 +32,6 @@ public class CodeMemory {
             int currentInstructionAddress = Commons.codeBaseAddress;
 
             while((aLine = br.readLine()) != null) {
-                //System.out.println(aLine);
 
                 codeLines.add(new CodeLine(currentFileLineNumber, currentInstructionAddress, aLine));
 

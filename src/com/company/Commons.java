@@ -5,6 +5,7 @@ public class Commons {
     public static final int codeBaseAddress = 4000;
     public static final int codeInstructionLength = 4;
     public static final int dataBaseAddress = 0;
+    public static final int dataAddressLength = 4;
     public static final int dataTotalLocations = 4000;
     public static final int totalRegisters = 16;
 

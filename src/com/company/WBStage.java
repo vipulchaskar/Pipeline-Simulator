@@ -14,59 +14,63 @@ public class WBStage {
         if (stalled || inputInstruction == null)
             return;
 
-        //Fetch new instruction
-        //System.out.println("WB stage in execution, received instruction: " + inputInstruction.getInsString());
-
         switch (inputInstruction.getOpCode()) {
             case ADD:
-                //System.out.println("In case of add, writing " + String.valueOf(inputInstruction.getIntermResult()) +
-                //" to register " + inputInstruction.getdRegAddr());
-                if (inputInstruction.getIntermResult() == 0) {
-                    Flags.setZero(true);
-                    System.out.println("Zero flag set by ADD instruction!");
+                if (inputInstruction.getIsGonnaSetFlags()) {
+                    if (inputInstruction.getIntermResult() == 0) {
+                        System.out.println("Zero flag set by ADD instruction!");
+                        Flags.setZero(true);
+                    }
+                    Flags.setBusy(false);
                 }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case SUB:
-                //System.out.println("In case of subtract, writing " + String.valueOf(inputInstruction.getIntermResult()) +
-                //        " to register " + inputInstruction.getdRegAddr());
-                if (inputInstruction.getIntermResult() == 0) {
-                    Flags.setZero(true);
-                    System.out.println("Zero flag set by SUB instruction!");
+                if (inputInstruction.getIsGonnaSetFlags()) {
+                    if (inputInstruction.getIntermResult() == 0) {
+                        Flags.setZero(true);
+                        System.out.println("Zero flag set by SUB instruction!");
+                    }
+                    Flags.setBusy(false);
                 }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case ADDC:
-                if (inputInstruction.getIntermResult() == 0) {
-                    Flags.setZero(true);
-                    System.out.println("Zero flag set by ADDC instruction!");
+                if (inputInstruction.getIsGonnaSetFlags()) {
+                    if (inputInstruction.getIntermResult() == 0) {
+                        Flags.setZero(true);
+                        System.out.println("Zero flag set by ADDC instruction!");
+                    }
+                    Flags.setBusy(false);
                 }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case MUL:
-                if (inputInstruction.getIntermResult() == 0) {
-                    Flags.setZero(true);
-                    System.out.println("Zero flag set by MUL instruction!");
+                if (inputInstruction.getIsGonnaSetFlags()) {
+                    if (inputInstruction.getIntermResult() == 0) {
+                        Flags.setZero(true);
+                        System.out.println("Zero flag set by MUL instruction!");
+                    }
+                    Flags.setBusy(false);
                 }
-                //System.out.println("In case of multiply, writing " + String.valueOf(inputInstruction.getIntermResult()) +
-                //        " to register " + inputInstruction.getdRegAddr());
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case DIV:
-                if (inputInstruction.getIntermResult() == 0) {
-                    Flags.setZero(true);
-                    System.out.println("Zero flag set by DIV instruction!");
+                if (inputInstruction.getIsGonnaSetFlags()) {
+                    if (inputInstruction.getIntermResult() == 0) {
+                        Flags.setZero(true);
+                        System.out.println("Zero flag set by DIV instruction!");
+                    }
+                    Flags.setBusy(false);
                 }
-                //System.out.println("In case of divide, writing " + String.valueOf(inputInstruction.getIntermResult()) +
-                //        " to register " + inputInstruction.getdRegAddr());
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
@@ -82,7 +86,6 @@ public class WBStage {
             case MOVC:
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getLiteral());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
-                //System.out.println("Register " + String.valueOf(inputInstruction.getdRegAddr()) + " set free.");
                 break;
 
             case AND:
@@ -101,7 +104,6 @@ public class WBStage {
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
-
             case BZ:
             case BNZ:
                 break;
@@ -110,18 +112,15 @@ public class WBStage {
                 break;
 
             case HALT:
-                // TODO: Set the halt logic here.
                 break;
 
             case NOOP:
                 break;
 
             default:
-                System.out.println("Error! Unknown instruction opcode found in DRF stage!");
+                System.out.println("Error! Unknown instruction opcode found in WB stage!");
                 break;
         }
-
-        //System.out.println("WB finished executing!");
 
     }
 
@@ -130,6 +129,13 @@ public class WBStage {
             return "-";
         }
         return "I" + String.valueOf(inputInstruction.getSequenceNo());
+    }
+
+    public String getCurInstrString() {
+        if (inputInstruction == null) {
+            return "-";
+        }
+        return inputInstruction.getInsString();
     }
 
 }

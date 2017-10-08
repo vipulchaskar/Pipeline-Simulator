@@ -11,13 +11,9 @@ public class MUL2Stage {
 
     public void execute() {
         if (stalled || inputInstruction == null) {
-            //System.out.println("MUL2 stage exiting...");
             outputInstruction = null;
             return;
         }
-
-        //Fetch new instruction
-        //System.out.println("MUL2 stage in execution, received instruction: " + inputInstruction.getInsString());
 
         switch (inputInstruction.getOpCode()) {
             case ADD:
@@ -69,11 +65,9 @@ public class MUL2Stage {
                 break;
 
             default:
-                System.out.println("Error! Unknown instruction opcode found in DRF stage!");
+                System.out.println("Error! Unknown instruction opcode found in MUL2 stage!");
                 break;
         }
-
-        //System.out.println("MUL2 finished executing! Intermediate result is : " + inputInstruction.getIntermResult());
 
         // Let's give this instruction to output latch.
         outputInstruction = inputInstruction;
@@ -85,5 +79,12 @@ public class MUL2Stage {
             return "-";
         }
         return "I" + String.valueOf(inputInstruction.getSequenceNo());
+    }
+
+    public String getCurInstrString() {
+        if (inputInstruction == null) {
+            return "-";
+        }
+        return inputInstruction.getInsString();
     }
 }
