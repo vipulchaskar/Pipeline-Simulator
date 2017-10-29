@@ -1,12 +1,19 @@
 package com.company;
 
-public class MUL2Stage {
+public class DIVStage {
     public InstructionInfo outputInstruction;
     public InstructionInfo inputInstruction;
     public boolean stalled;
+    private boolean performsDivision;
 
-    public MUL2Stage() {
+    public DIVStage(boolean performsDivision) {
         stalled = false;
+        this.performsDivision = performsDivision;
+    }
+
+    public DIVStage() {
+        stalled = false;
+        performsDivision = false;
     }
 
     public void execute() {
@@ -29,6 +36,13 @@ public class MUL2Stage {
                 break;
 
             case DIV:
+                if (performsDivision) {
+                    if (inputInstruction.getsReg2Addr() != -1) {
+                        inputInstruction.setIntermResult(inputInstruction.getsReg1Val() / inputInstruction.getsReg2Val());
+                    } else {
+                        inputInstruction.setIntermResult(inputInstruction.getsReg1Val() / inputInstruction.getLiteral());
+                    }
+                }
                 break;
 
             case LOAD:
@@ -65,7 +79,7 @@ public class MUL2Stage {
                 break;
 
             default:
-                System.out.println("Error! Unknown instruction opcode found in MUL2 stage!");
+                System.out.println("Error! Unknown instruction opcode found in DIV stage!");
                 break;
         }
 

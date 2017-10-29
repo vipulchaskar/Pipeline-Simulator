@@ -88,15 +88,22 @@ public class MUL1Stage {
 
     public String getCurInstr() {
         if (inputInstruction == null) {
-            return "-";
+            return "";
         }
-        return "I" + String.valueOf(inputInstruction.getSequenceNo());
+        return "(I" + String.valueOf(inputInstruction.getSequenceNo()) + ")";
     }
 
     public String getCurInstrString() {
         if (inputInstruction == null) {
-            return "-";
+            return "Empty";
         }
         return inputInstruction.getInsString();
     }
+
+    public String getStalledStr() {
+        if (stalled)
+            return "Stalled";
+        return "";
+    }
+
 }

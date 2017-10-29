@@ -1,6 +1,7 @@
 package com.company;
 
 import java.util.Scanner;
+import java.io.File;
 
 public class Main {
 
@@ -14,6 +15,11 @@ public class Main {
             System.exit(1);
         }
 
+        File f = new File(args[0]);
+        if (!f.exists() || f.isDirectory()) {
+            System.out.println("Error! File " + args[0] + " not found.");
+            System.exit(1);
+        }
 
         while (choice != 4) {
             System.out.println("\nMenu:");

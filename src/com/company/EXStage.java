@@ -123,14 +123,14 @@ public class EXStage {
 
     public String getCurInstr() {
         if (inputInstruction == null) {
-            return "-";
+            return "";
         }
-        return "I" + String.valueOf(inputInstruction.getSequenceNo());
+        return "(I" + String.valueOf(inputInstruction.getSequenceNo()) + ")";
     }
 
     public String getCurInstrString() {
         if (inputInstruction == null) {
-            return "-";
+            return "Empty";
         }
         return inputInstruction.getInsString();
     }
@@ -139,9 +139,16 @@ public class EXStage {
         return stalled;
     }
 
+    public String getStalledStr() {
+        if (stalled)
+            return "Stalled";
+        return "";
+    }
+
     public void setStalled(boolean stalled) {
         this.stalled = stalled;
     }
+
 
 
 }

@@ -178,6 +178,11 @@ public class DRFStage {
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
                     }
+                    // This is an arithmetic instruction. Evaporate the capability of instructions already in pipeline
+                    // to set the flags.
+                    // Thou shalt set no more flags :D
+                    Pipeline.RemoveFlagSettingCapability();
+                    inputInstruction.setIsGonnaSetFlags(true);
                     inputInstruction.setDecoded(true);
                     break;
 
@@ -189,6 +194,11 @@ public class DRFStage {
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
                     }
+                    // This is an arithmetic instruction. Evaporate the capability of instructions already in pipeline
+                    // to set the flags.
+                    // Thou shalt set no more flags :D
+                    Pipeline.RemoveFlagSettingCapability();
+                    inputInstruction.setIsGonnaSetFlags(true);
                     inputInstruction.setDecoded(true);
                     break;
 
@@ -200,6 +210,11 @@ public class DRFStage {
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
                     }
+                    // This is an arithmetic instruction. Evaporate the capability of instructions already in pipeline
+                    // to set the flags.
+                    // Thou shalt set no more flags :D
+                    Pipeline.RemoveFlagSettingCapability();
+                    inputInstruction.setIsGonnaSetFlags(true);
                     inputInstruction.setDecoded(true);
                     break;
 
@@ -238,8 +253,6 @@ public class DRFStage {
             boolean SReg2Free = (inputInstruction.getsReg2Addr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getsReg2Addr()));
             boolean FlagsAvailable = (!inputInstruction.isFlagConsumer() || !Flags.getBusy());
 
-            //System.out.println("Destination register address: " + String.valueOf(inputInstruction.getdRegAddr()));
-            //System.out.println("Destination register available? " + String.valueOf(RegisterFile.GetRegisterStatus(inputInstruction.getdRegAddr())));
             if (DRegFree && SReg1Free && SReg2Free && FlagsAvailable) {
                 // Interlocking logic satisfied.
                 //System.out.println("Interlocking logic satisfied.");
@@ -248,7 +261,6 @@ public class DRFStage {
                 // So, the instruction is ready to go ahead.Fetch the register values
                 switch (inputInstruction.getOpCode()) {
                     case ADD:
-                        //System.out.println("Yuhooo! I am locking the register: " + String.valueOf(inputInstruction.getdRegAddr()));
                         RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
                         inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
                         if (inputInstruction.getsReg2Addr() != -1) {
@@ -378,14 +390,14 @@ public class DRFStage {
 
     public String getCurInstr() {
         if (inputInstruction == null) {
-            return "-";
+            return "";
         }
-        return "I" + String.valueOf(inputInstruction.getSequenceNo());
+        return "(I" + String.valueOf(inputInstruction.getSequenceNo()) + ")";
     }
 
     public String getCurInstrString() {
         if (inputInstruction == null) {
-            return "-";
+            return "Empty";
         }
         return inputInstruction.getInsString();
     }
@@ -404,6 +416,12 @@ public class DRFStage {
 
     public void setExStalled(boolean exStalled) {
         this.exStalled = exStalled;
+    }
+
+    public String getStalledStr() {
+        if (stalled || exStalled)
+            return "Stalled";
+        return "";
     }
 
 }

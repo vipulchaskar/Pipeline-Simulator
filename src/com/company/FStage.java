@@ -37,7 +37,7 @@ public class FStage {
         }
         else {
 
-            InstructionInfo ii = new InstructionInfo(cl.getInsString(), cl.getAddress(), nextInstAddress + 1);
+            InstructionInfo ii = new InstructionInfo(cl.getInsString(), cl.getAddress(), nextInstAddress);
 
             nextInstAddress++;
 
@@ -56,14 +56,14 @@ public class FStage {
 
     public String getCurInstr() {
         if (outputInstruction == null) {
-            return "-";
+            return "";
         }
-        return "I" + String.valueOf(outputInstruction.getSequenceNo());
+        return "(I" + String.valueOf(outputInstruction.getSequenceNo()) + ")";
     }
 
     public String getCurInstrString() {
         if (outputInstruction == null) {
-            return "-";
+            return "Empty";
         }
         return outputInstruction.getInsString();
     }
@@ -75,6 +75,13 @@ public class FStage {
     public void setExStalled(boolean exStalled) {
         this.exStalled = exStalled;
     }
+
+    public String getStalledStr() {
+        if (stalled || exStalled)
+            return "Stalled";
+        return "";
+    }
+
 
 
 }

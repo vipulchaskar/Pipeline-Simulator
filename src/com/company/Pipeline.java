@@ -10,6 +10,10 @@ public class Pipeline {
     private static EXStage exs;
     private static MUL1Stage mul1s;
     private static MUL2Stage mul2s;
+    private static DIVStage div1s;
+    private static DIVStage div2s;
+    private static DIVStage div3s;
+    private static DIVStage div4s;
     private static MEMStage mems;
     private static WBStage wbs;
 
@@ -19,6 +23,10 @@ public class Pipeline {
         exs = new EXStage();
         mul1s = new MUL1Stage();
         mul2s = new MUL2Stage();
+        div1s = new DIVStage(true);
+        div2s = new DIVStage(false);
+        div3s = new DIVStage(false);
+        div4s = new DIVStage(false);
         mems = new MEMStage();
         wbs = new WBStage();
         halted = false;
@@ -44,7 +52,7 @@ public class Pipeline {
 
     public static void Simulate(int clockCycles) {
 
-        System.out.println(" F  | DRF|  EX|MUL1|MUL2| MEM|  WB| Cycle no.");
+        //System.out.println(" F  | DRF|  EX|MUL1|MUL2| MEM|  WB| Cycle no.");
         for (int i = 1; i <= clockCycles; i++) {
 
             wbs.execute();
@@ -61,10 +69,19 @@ public class Pipeline {
 
             fs.execute();
 
-            System.out.println(String.format("%1$4s", fs.getCurInstr()) + "|" + String.format("%1$4s", drfs.getCurInstr())
-                    + "|" + String.format("%1$4s", exs.getCurInstr()) + "|" + String.format("%1$4s", mul1s.getCurInstr())
-                    + "|" + String.format("%1$4s", mul2s.getCurInstr()) + "|" + String.format("%1$4s", mems.getCurInstr())
-                    + "|" + String.format("%1$4s", wbs.getCurInstr()) + "|   " + String.valueOf(i));
+            //System.out.println(String.format("%1$4s", fs.getCurInstr()) + "|" + String.format("%1$4s", drfs.getCurInstr())
+            //        + "|" + String.format("%1$4s", exs.getCurInstr()) + "|" + String.format("%1$4s", mul1s.getCurInstr())
+            //        + "|" + String.format("%1$4s", mul2s.getCurInstr()) + "|" + String.format("%1$4s", mems.getCurInstr())
+            //        + "|" + String.format("%1$4s", wbs.getCurInstr()) + "|   " + String.valueOf(i));
+            System.out.println("Cycle " + String.valueOf(i) + ":");
+            System.out.println("Fetch       : " + fs.getCurInstr() + " " + fs.getCurInstrString() + " " + fs.getStalledStr());
+            System.out.println("DRF         : " + drfs.getCurInstr() + " " + drfs.getCurInstrString() + " " + drfs.getStalledStr());
+            System.out.println("INTFU       : " + exs.getCurInstr() + " " + exs.getCurInstrString() + " " + exs.getStalledStr());
+            System.out.println("MUL1        : " + mul1s.getCurInstr() + " " + mul1s.getCurInstrString() + " " + mul1s.getStalledStr());
+            System.out.println("MUL2        : " + mul2s.getCurInstr() + " " + mul2s.getCurInstrString() + " " + mul2s.getStalledStr());
+            System.out.println("MEM         : " + mems.getCurInstr() + " " + mems.getCurInstrString() + " " + mems.getStalledStr());
+            System.out.println("WB          : " + wbs.getCurInstr() + " " + wbs.getCurInstrString() + " " + wbs.getStalledStr());
+            System.out.println("");
 
             if (drfs.isStalled()) {
                 fs.setStalled(true);

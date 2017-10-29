@@ -21,6 +21,8 @@ public class WBStage {
                         System.out.println("Zero flag set by ADD instruction!");
                         Flags.setZero(true);
                     }
+                    else
+                        Flags.setZero(false);
                     Flags.setBusy(false);
                 }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
@@ -33,6 +35,8 @@ public class WBStage {
                         Flags.setZero(true);
                         System.out.println("Zero flag set by SUB instruction!");
                     }
+                    else
+                        Flags.setZero(false);
                     Flags.setBusy(false);
                 }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
@@ -45,6 +49,8 @@ public class WBStage {
                         Flags.setZero(true);
                         System.out.println("Zero flag set by ADDC instruction!");
                     }
+                    else
+                        Flags.setZero(false);
                     Flags.setBusy(false);
                 }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
@@ -57,6 +63,8 @@ public class WBStage {
                         Flags.setZero(true);
                         System.out.println("Zero flag set by MUL instruction!");
                     }
+                    else
+                        Flags.setZero(false);
                     Flags.setBusy(false);
                 }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
@@ -69,6 +77,8 @@ public class WBStage {
                         Flags.setZero(true);
                         System.out.println("Zero flag set by DIV instruction!");
                     }
+                    else
+                        Flags.setZero(false);
                     Flags.setBusy(false);
                 }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
@@ -89,17 +99,43 @@ public class WBStage {
                 break;
 
             case AND:
+                if (inputInstruction.getIsGonnaSetFlags()) {
+                    if (inputInstruction.getIntermResult() == 0) {
+                        Flags.setZero(true);
+                        System.out.println("Zero flag set by AND instruction!");
+                    }
+                    else
+                        Flags.setZero(false);
+                    Flags.setBusy(false);
+                }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case OR:
+                if (inputInstruction.getIsGonnaSetFlags()) {
+                    if (inputInstruction.getIntermResult() == 0) {
+                        Flags.setZero(true);
+                        System.out.println("Zero flag set by OR instruction!");
+                    }
+                    else
+                        Flags.setZero(false);
+                    Flags.setBusy(false);
+                }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
-
             case XOR:
+                if (inputInstruction.getIsGonnaSetFlags()) {
+                    if (inputInstruction.getIntermResult() == 0) {
+                        Flags.setZero(true);
+                        System.out.println("Zero flag set by XOR instruction!");
+                    }
+                    else
+                        Flags.setZero(false);
+                    Flags.setBusy(false);
+                }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
@@ -126,16 +162,22 @@ public class WBStage {
 
     public String getCurInstr() {
         if (inputInstruction == null) {
-            return "-";
+            return "";
         }
-        return "I" + String.valueOf(inputInstruction.getSequenceNo());
+        return "(I" + String.valueOf(inputInstruction.getSequenceNo()) + ")";
     }
 
     public String getCurInstrString() {
         if (inputInstruction == null) {
-            return "-";
+            return "Empty";
         }
         return inputInstruction.getInsString();
+    }
+
+    public String getStalledStr() {
+        if (stalled)
+            return "Stalled";
+        return "";
     }
 
 }
