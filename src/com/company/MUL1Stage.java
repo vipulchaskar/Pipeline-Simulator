@@ -106,4 +106,12 @@ public class MUL1Stage {
         return "";
     }
 
+    public boolean isStalled() {
+        return stalled;
+    }
+
+    public void setStalled(boolean stalled) {
+        this.stalled = stalled;
+    }
+
 }

@@ -7,12 +7,14 @@ public class FStage {
     public InstructionInfo outputInstruction;
     public boolean stalled;
     public boolean exStalled;
+    public boolean mulStalled;
     private int nextInstAddress;
 
     public FStage() {
         nextInstAddress = 0;
         stalled = false;
         exStalled = false;
+        mulStalled = false;
     }
 
     public void setNextInstAddress(int newNextInstAddress) {
@@ -23,7 +25,7 @@ public class FStage {
 
 
     public void execute() {
-        if (stalled || exStalled || Pipeline.IsBranching() || Pipeline.isHalted()) {
+        if (stalled || exStalled || mulStalled || Pipeline.IsBranching() || Pipeline.isHalted()) {
             //System.out.println("FStage is stalled. returning...");
             return;
         }
@@ -76,8 +78,12 @@ public class FStage {
         this.exStalled = exStalled;
     }
 
+    public boolean isMulStalled() { return mulStalled; }
+
+    public void setMulStalled(boolean mulStalled) { this.mulStalled = mulStalled; }
+
     public String getStalledStr() {
-        if (stalled || exStalled)
+        if (stalled || exStalled || mulStalled)
             return "Stalled";
         return "";
     }

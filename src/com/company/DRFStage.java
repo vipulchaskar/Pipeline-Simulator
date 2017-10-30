@@ -10,10 +10,12 @@ public class DRFStage {
 
     public boolean stalled;
     public boolean exStalled;
+    public boolean mulStalled;
 
     public DRFStage(FStage fsref) {
         stalled = false;
         exStalled = false;
+        mulStalled = false;
         fs = fsref;
     }
 
@@ -418,8 +420,12 @@ public class DRFStage {
         this.exStalled = exStalled;
     }
 
+    public boolean isMulStalled() { return mulStalled; }
+
+    public void setMulStalled(boolean mulStalled) { this.mulStalled = mulStalled; }
+
     public String getStalledStr() {
-        if (stalled || exStalled)
+        if (stalled || exStalled || mulStalled)
             return "Stalled";
         return "";
     }

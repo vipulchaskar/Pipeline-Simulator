@@ -3,6 +3,7 @@ package com.company;
 public class MUL2Stage {
     public InstructionInfo outputInstruction;
     public InstructionInfo inputInstruction;
+
     public boolean stalled;
 
     public MUL2Stage() {
@@ -93,5 +94,14 @@ public class MUL2Stage {
             return "Stalled";
         return "";
     }
+
+    public boolean isStalled() {
+        return stalled;
+    }
+
+    public void setStalled(boolean stalled) {
+        this.stalled = stalled;
+    }
+
 
 }
