@@ -140,7 +140,7 @@ public class EXStage {
     }
 
     public String getStalledStr() {
-        if (stalled)
+        if (stalled && inputInstruction != null)
             return "Stalled";
         return "";
     }

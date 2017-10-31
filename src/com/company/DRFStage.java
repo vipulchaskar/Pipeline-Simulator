@@ -425,7 +425,7 @@ public class DRFStage {
     public void setMulStalled(boolean mulStalled) { this.mulStalled = mulStalled; }
 
     public String getStalledStr() {
-        if (stalled || exStalled || mulStalled)
+        if ((stalled || exStalled || mulStalled) && inputInstruction != null)
             return "Stalled";
         return "";
     }

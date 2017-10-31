@@ -11,7 +11,8 @@ public class MUL1Stage {
 
     public void execute() {
         if (stalled || inputInstruction == null) {
-            outputInstruction = null;
+            if (inputInstruction == null)
+                outputInstruction = null;
             return;
         }
 
@@ -101,7 +102,7 @@ public class MUL1Stage {
     }
 
     public String getStalledStr() {
-        if (stalled)
+        if (stalled && inputInstruction != null)
             return "Stalled";
         return "";
     }

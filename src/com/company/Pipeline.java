@@ -121,18 +121,22 @@ public class Pipeline {
             // Selection Logic
             if (div4s.outputInstruction == null) {
                 if (mul2s.outputInstruction == null && exs.outputInstruction == null) {
+                    //System.out.println("1");
                     mems.inputInstruction = null;
                 } else if (mul2s.outputInstruction != null && exs.outputInstruction == null) {
+                    //System.out.println("2");
                     mul2s.setStalled(false);
                     mul1s.setStalled(false);
                     mems.inputInstruction = mul2s.outputInstruction;
                     mul2s.outputInstruction = null;
                 } else if (mul2s.outputInstruction == null && exs.outputInstruction != null) {
+                    //System.out.println("3");
                     exs.setStalled(false);
                     mems.inputInstruction = exs.outputInstruction;
                     exs.outputInstruction = null;
                 } else {
                     // Collision! Give preference to MUL instructions
+                    //System.out.println("Collision between MUL and EX!");
                     mul1s.setStalled(false);
                     mul2s.setStalled(false);
                     mems.inputInstruction = mul2s.outputInstruction;
@@ -142,6 +146,7 @@ public class Pipeline {
                 }
             }
             else {
+                //System.out.println("5");
                 mems.inputInstruction = div4s.outputInstruction;
                 div4s.outputInstruction = null;
                 //TODO: Is the If-Condition really required?
@@ -155,7 +160,8 @@ public class Pipeline {
             }
 
             // MUL2 <-- MUL1
-            mul2s.inputInstruction = mul1s.outputInstruction;
+            if (! mul2s.isStalled())
+                mul2s.inputInstruction = mul1s.outputInstruction;
 
             // DIV x+1 <-- DIV x
             div4s.inputInstruction = div3s.outputInstruction;
@@ -192,7 +198,7 @@ public class Pipeline {
                     else
                         drfs.setExStalled(true);
                     mul1s.inputInstruction = null;
-                    drfs.inputInstruction = null;
+                    div1s.inputInstruction = null;
                 }
             }
             else {

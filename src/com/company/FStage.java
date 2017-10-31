@@ -83,7 +83,7 @@ public class FStage {
     public void setMulStalled(boolean mulStalled) { this.mulStalled = mulStalled; }
 
     public String getStalledStr() {
-        if (stalled || exStalled || mulStalled)
+        if ((stalled || exStalled || mulStalled) && outputInstruction != null)
             return "Stalled";
         return "";
     }
