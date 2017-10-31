@@ -95,6 +95,8 @@ public class Pipeline {
             System.out.println("WB          : " + wbs.getCurInstr() + " " + wbs.getCurInstrString() + " " + wbs.getStalledStr());
             System.out.println("");
 
+            DataForwarding();
+
             if (drfs.isStalled()) {
                 fs.setStalled(true);
             }
@@ -149,14 +151,13 @@ public class Pipeline {
                 //System.out.println("5");
                 mems.inputInstruction = div4s.outputInstruction;
                 div4s.outputInstruction = null;
-                //TODO: Is the If-Condition really required?
-                if (mul2s.outputInstruction != null) {
+
+                if (mul2s.outputInstruction != null)
                     mul2s.setStalled(true);
+                if (mul1s.outputInstruction != null)
                     mul1s.setStalled(true);
-                }
-                if (exs.outputInstruction != null) {
+                if (exs.outputInstruction != null)
                     exs.setStalled(true);
-                }
             }
 
             // MUL2 <-- MUL1
@@ -175,12 +176,16 @@ public class Pipeline {
                 if ((drfs.outputInstruction.getOpCode() == Commons.I.DIV
                         || drfs.outputInstruction.getOpCode() == Commons.I.HALT)
                         && div1s.inputInstruction != drfs.outputInstruction) {
+                    //System.out.println("Spl 1");
                     div1s.inputInstruction = drfs.outputInstruction;
-                    mul1s.inputInstruction = null;
-                    exs.inputInstruction = null;
+                    if (! mul1s.isStalled())
+                        mul1s.inputInstruction = null;
+                    if (! exs.isStalled())
+                        exs.inputInstruction = null;
                 }
                 else if ((drfs.outputInstruction.getOpCode() == Commons.I.MUL)
                         && mul1s.inputInstruction != drfs.outputInstruction) {
+                    //System.out.println("Spl 2");
                     if ( ! mul1s.isStalled()) {
                         drfs.setMulStalled(false);
                         mul1s.inputInstruction = drfs.outputInstruction;
@@ -188,20 +193,24 @@ public class Pipeline {
                     else
                         drfs.setMulStalled(true);
                     div1s.inputInstruction = null;
-                    exs.inputInstruction = null;
+                    if (! exs.isStalled())
+                        exs.inputInstruction = null;
 
                 } else if (exs.inputInstruction != drfs.outputInstruction) {
+                    //System.out.println("Spl 3");
                     if ( ! exs.isStalled()) {
                         drfs.setExStalled(false);
                         exs.inputInstruction = drfs.outputInstruction;
                     }
                     else
                         drfs.setExStalled(true);
-                    mul1s.inputInstruction = null;
+                    if (! mul1s.isStalled())
+                        mul1s.inputInstruction = null;
                     div1s.inputInstruction = null;
                 }
             }
             else {
+                //System.out.println("Spl 4");
                 // This will create problems if they're stalled!
                 div1s.inputInstruction = null;
                 if (! mul1s.isStalled())
@@ -223,6 +232,77 @@ public class Pipeline {
 
             if (! fs.isStalled() && ! fs.isExStalled() && ! fs.isMulStalled())
                 drfs.inputInstruction = fs.outputInstruction;
+        }
+    }
+
+    public static void DataForwarding() {
+        int src1;
+        int src2;
+        int flags = -1; // is it right??
+
+        if (drfs.inputInstruction == null)
+            return;
+
+        src1 = drfs.inputInstruction.getsReg1Addr();
+        src2 = drfs.inputInstruction.getsReg2Addr();
+
+        if (! drfs.inputInstruction.isRegistersFetched()) {
+            // Forwarding from DIV4 to DRF
+            if (div4s.outputInstruction != null) {
+                int div4d = div4s.outputInstruction.getdRegAddr();
+                if (div4d != -1) {
+                    if (div4d == src1) {
+                        System.out.println("Forwarding " + String.valueOf(div4s.outputInstruction.getIntermResult()) + " from DIV to src1 of DRF!");
+                        drfs.inputInstruction.setsReg1Val(div4s.outputInstruction.getIntermResult());
+                        drfs.inputInstruction.setSrc1Forwarded(true);
+                    }
+
+                    if (div4d == src2) {
+                        System.out.println("Forwarding " + String.valueOf(div4s.outputInstruction.getIntermResult()) + " from DIV to src2 of DRF!");
+                        drfs.inputInstruction.setsReg2Val(div4s.outputInstruction.getIntermResult());
+                        drfs.inputInstruction.setSrc2Forwarded(true);
+                    }
+                }
+            }
+
+            // Forwarding from MUL2 to DRF
+            if (mul2s.outputInstruction != null) {
+                int mul2d = mul2s.outputInstruction.getdRegAddr();
+                if (mul2d != -1) {
+                    if (mul2d == src1) {
+                        System.out.println("Forwarding " + String.valueOf(mul2s.outputInstruction.getIntermResult()) + "from MUL to src1 of DRF!");
+                        drfs.inputInstruction.setsReg1Val(mul2s.outputInstruction.getIntermResult());
+                        drfs.inputInstruction.setSrc1Forwarded(true);
+                    }
+
+                    if (mul2d == src2) {
+                        System.out.println("Forwarding " + String.valueOf(mul2s.outputInstruction.getIntermResult()) + "from MUL to src2 of DRF!");
+                        drfs.inputInstruction.setsReg2Val(mul2s.outputInstruction.getIntermResult());
+                        drfs.inputInstruction.setSrc2Forwarded(true);
+                    }
+                }
+            }
+
+            // Forwarding from EX to DRF
+            if (exs.outputInstruction != null) {
+                int exd = exs.outputInstruction.getdRegAddr();
+                if (exd != -1) {
+                    if (exd == src1) {
+                        System.out.println("Forwarding " + String.valueOf(exs.outputInstruction.getIntermResult()) + "from EX to src1 of DRF!");
+                        drfs.inputInstruction.setsReg1Val(exs.outputInstruction.getIntermResult());
+                        drfs.inputInstruction.setSrc1Forwarded(true);
+                    }
+
+                    if (exd == src2) {
+                        System.out.println("Forwarding " + String.valueOf(exs.outputInstruction.getIntermResult()) + "from EX to src2 of DRF!");
+                        drfs.inputInstruction.setsReg2Val(exs.outputInstruction.getIntermResult());
+                        drfs.inputInstruction.setSrc2Forwarded(true);
+                    }
+                }
+            }
+
+            // Trigger the interlocking logic to see if instruction can be moved ahead after forwarding
+            drfs.InterLockingLogic();
         }
     }
 

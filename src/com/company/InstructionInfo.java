@@ -18,6 +18,8 @@ public class InstructionInfo {
     private boolean isGonnaSetFlags;
     private boolean flagConsumer;
     private boolean registersFetched;
+    private boolean src1Forwarded;
+    private boolean src2Forwarded;
 
     public InstructionInfo(String insString, int PC, int insSeqNo) {
         this.insString = insString;
@@ -36,6 +38,8 @@ public class InstructionInfo {
         memAddr = -1;
         literal = -1;  // TODO: I know this is wrong. But keeping for now.
         intermResult = -1;  // TODO: I know this is wrong. But keeping for now.
+        src1Forwarded = false;
+        src2Forwarded = false;
     }
 
     public int getPC() {
@@ -75,7 +79,8 @@ public class InstructionInfo {
     }
 
     public void setsReg1Val(int sReg1Val) {
-        this.sReg1Val = sReg1Val;
+        if (! isSrc1Forwarded())
+            this.sReg1Val = sReg1Val;
     }
 
     public int getsReg2Addr() {
@@ -91,7 +96,8 @@ public class InstructionInfo {
     }
 
     public void setsReg2Val(int sReg2Val) {
-        this.sReg2Val = sReg2Val;
+        if (! isSrc2Forwarded())
+            this.sReg2Val = sReg2Val;
     }
 
     public int getdRegAddr() {
@@ -180,6 +186,22 @@ public class InstructionInfo {
 
     public void setRegistersFetched(boolean registersFetched) {
         this.registersFetched = registersFetched;
+    }
+
+    public boolean isSrc1Forwarded() {
+        return src1Forwarded;
+    }
+
+    public void setSrc1Forwarded(boolean src1Forwarded) {
+        this.src1Forwarded = src1Forwarded;
+    }
+
+    public boolean isSrc2Forwarded() {
+        return src2Forwarded;
+    }
+
+    public void setSrc2Forwarded(boolean src2Forwarded) {
+        this.src2Forwarded = src2Forwarded;
     }
 
 }

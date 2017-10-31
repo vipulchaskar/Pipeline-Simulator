@@ -248,11 +248,24 @@ public class DRFStage {
             }
         }
 
+        InterLockingLogic();
+
+    }
+
+    public void InterLockingLogic() {
         if (! inputInstruction.isRegistersFetched()) {
             // Interlocking logic
-            boolean DRegFree = (inputInstruction.getdRegAddr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getdRegAddr()));
-            boolean SReg1Free = (inputInstruction.getsReg1Addr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getsReg1Addr()));
-            boolean SReg2Free = (inputInstruction.getsReg2Addr() == -1 || RegisterFile.GetRegisterStatus(inputInstruction.getsReg2Addr()));
+            boolean DRegFree = (inputInstruction.getdRegAddr() == -1
+                    || RegisterFile.GetRegisterStatus(inputInstruction.getdRegAddr()));
+
+            boolean SReg1Free = (inputInstruction.getsReg1Addr() == -1
+                    || RegisterFile.GetRegisterStatus(inputInstruction.getsReg1Addr())
+                    || inputInstruction.isSrc1Forwarded());
+
+            boolean SReg2Free = (inputInstruction.getsReg2Addr() == -1
+                    || RegisterFile.GetRegisterStatus(inputInstruction.getsReg2Addr())
+                    || inputInstruction.isSrc2Forwarded());
+
             boolean FlagsAvailable = (!inputInstruction.isFlagConsumer() || !Flags.getBusy());
 
             if (DRegFree && SReg1Free && SReg2Free && FlagsAvailable) {

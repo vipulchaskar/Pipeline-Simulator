@@ -11,6 +11,14 @@ public class EXStage {
     }
 
     public void execute() {
+        /*if (stalled || inputInstruction == null) {
+            if (inputInstruction == null)
+                outputInstruction = null;
+            return;
+        }*/
+        if (stalled && outputInstruction != null)
+            return;
+
         if (stalled || inputInstruction == null) {
             if (inputInstruction == null)
                 outputInstruction = null;
