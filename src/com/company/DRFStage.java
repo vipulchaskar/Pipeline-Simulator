@@ -74,6 +74,8 @@ public class DRFStage {
                 inputInstruction.setOpCode(I.XOR);
             } else if (parts[0].equals("NOOP")) {
                 inputInstruction.setOpCode(I.NOOP);
+            } else if (parts[0].equals("JAL")) {
+                inputInstruction.setOpCode(I.JAL);
             } else {
                 System.out.println("Error! Unsupported opCode : " + parts[0] + " found!");
                 return;
@@ -180,11 +182,6 @@ public class DRFStage {
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
                     }
-                    // This is an arithmetic instruction. Evaporate the capability of instructions already in pipeline
-                    // to set the flags.
-                    // Thou shalt set no more flags :D
-                    Pipeline.RemoveFlagSettingCapability();
-                    inputInstruction.setIsGonnaSetFlags(true);
                     inputInstruction.setDecoded(true);
                     break;
 
@@ -196,11 +193,6 @@ public class DRFStage {
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
                     }
-                    // This is an arithmetic instruction. Evaporate the capability of instructions already in pipeline
-                    // to set the flags.
-                    // Thou shalt set no more flags :D
-                    Pipeline.RemoveFlagSettingCapability();
-                    inputInstruction.setIsGonnaSetFlags(true);
                     inputInstruction.setDecoded(true);
                     break;
 
@@ -212,11 +204,6 @@ public class DRFStage {
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
                     }
-                    // This is an arithmetic instruction. Evaporate the capability of instructions already in pipeline
-                    // to set the flags.
-                    // Thou shalt set no more flags :D
-                    Pipeline.RemoveFlagSettingCapability();
-                    inputInstruction.setIsGonnaSetFlags(true);
                     inputInstruction.setDecoded(true);
                     break;
 
@@ -242,6 +229,13 @@ public class DRFStage {
                     inputInstruction.setDecoded(true);
                     break;
 
+                case JAL:
+                    inputInstruction.setdRegAddr(getRegAddrFromInsPart(parts[1]));
+                    inputInstruction.setsReg1Addr(getRegAddrFromInsPart(parts[2]));
+                    inputInstruction.setLiteral(getLiteralFromLitPart(parts[3]));
+                    inputInstruction.setDecoded(true);
+                    break;
+
                 default:
                     System.out.println("Error! Unknown instruction opcode found in DRF stage!");
                     break;
@@ -253,7 +247,7 @@ public class DRFStage {
     }
 
     public void InterLockingLogic() {
-        if (! inputInstruction.isRegistersFetched()) {
+        if (! inputInstruction.isRegistersFetched() && inputInstruction != null) {
             // Interlocking logic
             boolean DRegFree = (inputInstruction.getdRegAddr() == -1
                     || RegisterFile.GetRegisterStatus(inputInstruction.getdRegAddr()));
@@ -266,7 +260,9 @@ public class DRFStage {
                     || RegisterFile.GetRegisterStatus(inputInstruction.getsReg2Addr())
                     || inputInstruction.isSrc2Forwarded());
 
-            boolean FlagsAvailable = (!inputInstruction.isFlagConsumer() || !Flags.getBusy());
+            boolean FlagsAvailable = (!inputInstruction.isFlagConsumer()
+                    || !Flags.getBusy()
+                    || inputInstruction.isFlagsForwarded());
 
             if (DRegFree && SReg1Free && SReg2Free && FlagsAvailable) {
                 // Interlocking logic satisfied.
@@ -371,6 +367,11 @@ public class DRFStage {
                         break;
 
                     case NOOP:
+                        break;
+
+                    case JAL:
+                        RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), false);
+                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
                         break;
 
                     default:

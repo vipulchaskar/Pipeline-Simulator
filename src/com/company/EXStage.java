@@ -95,16 +95,22 @@ public class EXStage {
 
 
             case BZ:
-                if (Flags.getZero()) {
+                if ((inputInstruction.isFlagsForwarded() && inputInstruction.isForwardedZeroFlag())) {
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
                     // Flags.setZero(false);
+                }
+                else if (!Flags.getBusy() && Flags.getZero()) {
+                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
                 }
                 break;
 
             case BNZ:
-                if ( ! Flags.getZero()) {
+                if ((inputInstruction.isFlagsForwarded() && !inputInstruction.isForwardedZeroFlag())) {
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
                     // Flags.setZero(false);
+                }
+                else if (!Flags.getBusy() && !Flags.getZero()) {
+                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
                 }
                 break;
 
@@ -118,6 +124,12 @@ public class EXStage {
 
             case NOOP:
                 break;
+
+            case JAL:
+                inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
+                Pipeline.TakeBranch(inputInstruction.getIntermResult());
+                break;
+
 
             default:
                 System.out.println("Error! Unknown instruction opcode found in EX stage!");

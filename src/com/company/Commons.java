@@ -25,6 +25,7 @@ public class Commons {
         AND,
         OR,
         XOR,
-        NOOP
+        NOOP,
+        JAL
     }
 }

@@ -67,6 +67,9 @@ public class MEMStage {
             case NOOP:
                 break;
 
+            case JAL:
+                break;
+
             default:
                 System.out.println("Error! Unknown instruction opcode found in MEM stage!");
                 break;

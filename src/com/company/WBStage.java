@@ -99,43 +99,16 @@ public class WBStage {
                 break;
 
             case AND:
-                if (inputInstruction.getIsGonnaSetFlags()) {
-                    if (inputInstruction.getIntermResult() == 0) {
-                        Flags.setZero(true);
-                        System.out.println("Zero flag set by AND instruction!");
-                    }
-                    else
-                        Flags.setZero(false);
-                    Flags.setBusy(false);
-                }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case OR:
-                if (inputInstruction.getIsGonnaSetFlags()) {
-                    if (inputInstruction.getIntermResult() == 0) {
-                        Flags.setZero(true);
-                        System.out.println("Zero flag set by OR instruction!");
-                    }
-                    else
-                        Flags.setZero(false);
-                    Flags.setBusy(false);
-                }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case XOR:
-                if (inputInstruction.getIsGonnaSetFlags()) {
-                    if (inputInstruction.getIntermResult() == 0) {
-                        Flags.setZero(true);
-                        System.out.println("Zero flag set by XOR instruction!");
-                    }
-                    else
-                        Flags.setZero(false);
-                    Flags.setBusy(false);
-                }
                 RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
@@ -151,6 +124,11 @@ public class WBStage {
                 break;
 
             case NOOP:
+                break;
+
+            case JAL:
+                RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getPC() + Commons.codeInstructionLength);
+                RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             default:

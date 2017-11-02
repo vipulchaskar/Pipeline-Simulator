@@ -20,6 +20,8 @@ public class InstructionInfo {
     private boolean registersFetched;
     private boolean src1Forwarded;
     private boolean src2Forwarded;
+    private boolean flagsForwarded;
+    private boolean forwardedZeroFlag;
 
     public InstructionInfo(String insString, int PC, int insSeqNo) {
         this.insString = insString;
@@ -40,6 +42,8 @@ public class InstructionInfo {
         intermResult = -1;  // TODO: I know this is wrong. But keeping for now.
         src1Forwarded = false;
         src2Forwarded = false;
+        flagsForwarded = false;
+        forwardedZeroFlag = false;
     }
 
     public int getPC() {
@@ -202,6 +206,22 @@ public class InstructionInfo {
 
     public void setSrc2Forwarded(boolean src2Forwarded) {
         this.src2Forwarded = src2Forwarded;
+    }
+
+    public boolean isFlagsForwarded() {
+        return flagsForwarded;
+    }
+
+    public void setFlagsForwarded(boolean flagsForwarded) {
+        this.flagsForwarded = flagsForwarded;
+    }
+
+    public boolean isForwardedZeroFlag() {
+        return forwardedZeroFlag;
+    }
+
+    public void setForwardedZeroFlag(boolean forwardedZeroFlag) {
+        this.forwardedZeroFlag = forwardedZeroFlag;
     }
 
 }

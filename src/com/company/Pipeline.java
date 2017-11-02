@@ -238,35 +238,46 @@ public class Pipeline {
     public static void DataForwarding() {
         int src1;
         int src2;
-        int flags = -1; // is it right??
+        boolean zeroFlag;
 
-        if (drfs.inputInstruction == null)
+        if (drfs.inputInstruction == null || branch)
             return;
 
         src1 = drfs.inputInstruction.getsReg1Addr();
         src2 = drfs.inputInstruction.getsReg2Addr();
 
         if (! drfs.inputInstruction.isRegistersFetched()) {
-            // Forwarding from DIV4 to DRF
-            if (div4s.outputInstruction != null) {
-                int div4d = div4s.outputInstruction.getdRegAddr();
-                if (div4d != -1) {
-                    if (div4d == src1) {
-                        System.out.println("Forwarding " + String.valueOf(div4s.outputInstruction.getIntermResult()) + " from DIV to src1 of DRF!");
-                        drfs.inputInstruction.setsReg1Val(div4s.outputInstruction.getIntermResult());
+
+            // Forwarding from EX to DRF
+            if (exs.outputInstruction != null) {
+                // Forward the registers
+                int exd = exs.outputInstruction.getdRegAddr();
+                if (exd != -1) {
+                    if (exd == src1) {
+                        System.out.println("Forwarding " + String.valueOf(exs.outputInstruction.getIntermResult()) + "from EX to src1 of DRF!");
+                        drfs.inputInstruction.setsReg1Val(exs.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc1Forwarded(true);
                     }
 
-                    if (div4d == src2) {
-                        System.out.println("Forwarding " + String.valueOf(div4s.outputInstruction.getIntermResult()) + " from DIV to src2 of DRF!");
-                        drfs.inputInstruction.setsReg2Val(div4s.outputInstruction.getIntermResult());
+                    if (exd == src2) {
+                        System.out.println("Forwarding " + String.valueOf(exs.outputInstruction.getIntermResult()) + "from EX to src2 of DRF!");
+                        drfs.inputInstruction.setsReg2Val(exs.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc2Forwarded(true);
                     }
+                }
+
+                // Forward the flags
+                if (exs.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
+                    zeroFlag = (exs.outputInstruction.getIntermResult() == 0);
+                    System.out.println("Forwarding " + String.valueOf(zeroFlag) + " zero flag value from EX to DRF!");
+                    drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
+                    drfs.inputInstruction.setFlagsForwarded(true);
                 }
             }
 
             // Forwarding from MUL2 to DRF
             if (mul2s.outputInstruction != null) {
+                // Forward the registers
                 int mul2d = mul2s.outputInstruction.getdRegAddr();
                 if (mul2d != -1) {
                     if (mul2d == src1) {
@@ -281,23 +292,40 @@ public class Pipeline {
                         drfs.inputInstruction.setSrc2Forwarded(true);
                     }
                 }
+
+                // Forward the flags
+                if (mul2s.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
+                    zeroFlag = (mul2s.outputInstruction.getIntermResult() == 0);
+                    System.out.println("Forwarding " + String.valueOf(zeroFlag) + " zero flag value from MUL2 to DRF!");
+                    drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
+                    drfs.inputInstruction.setFlagsForwarded(true);
+                }
             }
 
-            // Forwarding from EX to DRF
-            if (exs.outputInstruction != null) {
-                int exd = exs.outputInstruction.getdRegAddr();
-                if (exd != -1) {
-                    if (exd == src1) {
-                        System.out.println("Forwarding " + String.valueOf(exs.outputInstruction.getIntermResult()) + "from EX to src1 of DRF!");
-                        drfs.inputInstruction.setsReg1Val(exs.outputInstruction.getIntermResult());
+            // Forwarding from DIV4 to DRF
+            if (div4s.outputInstruction != null) {
+                // Forward the registers
+                int div4d = div4s.outputInstruction.getdRegAddr();
+                if (div4d != -1) {
+                    if (div4d == src1) {
+                        System.out.println("Forwarding " + String.valueOf(div4s.outputInstruction.getIntermResult()) + " from DIV to src1 of DRF!");
+                        drfs.inputInstruction.setsReg1Val(div4s.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc1Forwarded(true);
                     }
 
-                    if (exd == src2) {
-                        System.out.println("Forwarding " + String.valueOf(exs.outputInstruction.getIntermResult()) + "from EX to src2 of DRF!");
-                        drfs.inputInstruction.setsReg2Val(exs.outputInstruction.getIntermResult());
+                    if (div4d == src2) {
+                        System.out.println("Forwarding " + String.valueOf(div4s.outputInstruction.getIntermResult()) + " from DIV to src2 of DRF!");
+                        drfs.inputInstruction.setsReg2Val(div4s.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc2Forwarded(true);
                     }
+                }
+
+                // Forward the flags
+                if (div4s.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
+                    zeroFlag = (div4s.outputInstruction.getIntermResult() == 0);
+                    System.out.println("Forwarding " + String.valueOf(zeroFlag) + " zero flag value from DIV to DRF!");
+                    drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
+                    drfs.inputInstruction.setFlagsForwarded(true);
                 }
             }
 
