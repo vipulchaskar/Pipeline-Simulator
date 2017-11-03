@@ -63,6 +63,7 @@ public class EXStage {
                 break;
 
             case MOVC:
+                inputInstruction.setIntermResult(inputInstruction.getLiteral());
                 break;
 
             case AND:

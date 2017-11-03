@@ -94,7 +94,7 @@ public class WBStage {
                 break;
 
             case MOVC:
-                RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getLiteral());
+                RegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 RegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 

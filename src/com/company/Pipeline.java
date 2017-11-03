@@ -249,7 +249,7 @@ public class Pipeline {
         if (! drfs.inputInstruction.isRegistersFetched()) {
 
             // Forwarding from EX to DRF
-            if (exs.outputInstruction != null) {
+            if (exs.outputInstruction != null && exs.outputInstruction.getOpCode() != Commons.I.LOAD) {
                 // Forward the registers
                 int exd = exs.outputInstruction.getdRegAddr();
                 if (exd != -1) {
