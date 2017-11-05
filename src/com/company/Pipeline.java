@@ -161,8 +161,11 @@ public class Pipeline {
             }
 
             // MUL2 <-- MUL1
-            if (! mul2s.isStalled())
+            if (! mul2s.isStalled()) {
                 mul2s.inputInstruction = mul1s.outputInstruction;
+                // NEW LINE!!!
+                mul1s.inputInstruction = null;
+            }
 
             // DIV x+1 <-- DIV x
             div4s.inputInstruction = div3s.outputInstruction;
@@ -230,8 +233,10 @@ public class Pipeline {
             else
                 fs.setMulStalled(false);
 
-            if (! fs.isStalled() && ! fs.isExStalled() && ! fs.isMulStalled())
+            if (! fs.isStalled() && ! fs.isExStalled() && ! fs.isMulStalled()) {
                 drfs.inputInstruction = fs.outputInstruction;
+                fs.outputInstruction = null;
+            }
         }
     }
 
