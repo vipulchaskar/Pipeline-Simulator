@@ -164,7 +164,8 @@ public class Pipeline {
             if (! mul2s.isStalled()) {
                 mul2s.inputInstruction = mul1s.outputInstruction;
                 // NEW LINE!!!
-                mul1s.inputInstruction = null;
+                //mul1s.outputInstruction = null;
+                mul1s.setStalled(false);
             }
 
             // DIV x+1 <-- DIV x
@@ -188,13 +189,14 @@ public class Pipeline {
                 }
                 else if ((drfs.outputInstruction.getOpCode() == Commons.I.MUL)
                         && mul1s.inputInstruction != drfs.outputInstruction) {
-                    //System.out.println("Spl 2");
+                    System.out.println("Spl 2");
                     if ( ! mul1s.isStalled()) {
                         drfs.setMulStalled(false);
                         mul1s.inputInstruction = drfs.outputInstruction;
                     }
-                    else
+                    else {
                         drfs.setMulStalled(true);
+                    }
                     div1s.inputInstruction = null;
                     if (! exs.isStalled())
                         exs.inputInstruction = null;
