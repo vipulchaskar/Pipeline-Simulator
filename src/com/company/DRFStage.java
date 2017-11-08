@@ -22,6 +22,7 @@ public class DRFStage {
 
     public void execute() {
         if (inputInstruction == null || Pipeline.IsBranching() || Pipeline.isHalted()) {
+            inputInstruction = null;
             outputInstruction = null;
             return;
         }

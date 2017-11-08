@@ -1,7 +1,5 @@
 package com.company;
 
-import java.nio.channels.Pipe;
-
 public class FStage {
 
     public InstructionInfo outputInstruction;
@@ -25,8 +23,12 @@ public class FStage {
 
 
     public void execute() {
-        if (stalled || exStalled || mulStalled || Pipeline.IsBranching() || Pipeline.isHalted()) {
+        if (stalled || exStalled || mulStalled) {
             //System.out.println("FStage is stalled. returning...");
+            return;
+        }
+        else if (Pipeline.IsBranching() || Pipeline.isHalted()) {
+            outputInstruction = null;
             return;
         }
 
