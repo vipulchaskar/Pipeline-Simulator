@@ -189,7 +189,7 @@ public class Pipeline {
                 }
                 else if ((drfs.outputInstruction.getOpCode() == Commons.I.MUL)
                         && mul1s.inputInstruction != drfs.outputInstruction) {
-                    System.out.println("Spl 2");
+                    //System.out.println("Spl 2");
                     if ( ! mul1s.isStalled()) {
                         drfs.setMulStalled(false);
                         mul1s.inputInstruction = drfs.outputInstruction;
@@ -261,13 +261,13 @@ public class Pipeline {
                 int exd = exs.outputInstruction.getdRegAddr();
                 if (exd != -1) {
                     if (exd == src1) {
-                        System.out.println("Forwarding " + String.valueOf(exs.outputInstruction.getIntermResult()) + "from EX to src1 of DRF!");
+                        //System.out.println("Forwarding " + String.valueOf(exs.outputInstruction.getIntermResult()) + "from EX to src1 of DRF!");
                         drfs.inputInstruction.setsReg1Val(exs.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc1Forwarded(true);
                     }
 
                     if (exd == src2) {
-                        System.out.println("Forwarding " + String.valueOf(exs.outputInstruction.getIntermResult()) + "from EX to src2 of DRF!");
+                        //System.out.println("Forwarding " + String.valueOf(exs.outputInstruction.getIntermResult()) + "from EX to src2 of DRF!");
                         drfs.inputInstruction.setsReg2Val(exs.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc2Forwarded(true);
                     }
@@ -288,13 +288,13 @@ public class Pipeline {
                 int mul2d = mul2s.outputInstruction.getdRegAddr();
                 if (mul2d != -1) {
                     if (mul2d == src1) {
-                        System.out.println("Forwarding " + String.valueOf(mul2s.outputInstruction.getIntermResult()) + "from MUL to src1 of DRF!");
+                        //System.out.println("Forwarding " + String.valueOf(mul2s.outputInstruction.getIntermResult()) + "from MUL to src1 of DRF!");
                         drfs.inputInstruction.setsReg1Val(mul2s.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc1Forwarded(true);
                     }
 
                     if (mul2d == src2) {
-                        System.out.println("Forwarding " + String.valueOf(mul2s.outputInstruction.getIntermResult()) + "from MUL to src2 of DRF!");
+                        //System.out.println("Forwarding " + String.valueOf(mul2s.outputInstruction.getIntermResult()) + "from MUL to src2 of DRF!");
                         drfs.inputInstruction.setsReg2Val(mul2s.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc2Forwarded(true);
                     }
@@ -315,13 +315,13 @@ public class Pipeline {
                 int div4d = div4s.outputInstruction.getdRegAddr();
                 if (div4d != -1) {
                     if (div4d == src1) {
-                        System.out.println("Forwarding " + String.valueOf(div4s.outputInstruction.getIntermResult()) + " from DIV to src1 of DRF!");
+                        //System.out.println("Forwarding " + String.valueOf(div4s.outputInstruction.getIntermResult()) + " from DIV to src1 of DRF!");
                         drfs.inputInstruction.setsReg1Val(div4s.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc1Forwarded(true);
                     }
 
                     if (div4d == src2) {
-                        System.out.println("Forwarding " + String.valueOf(div4s.outputInstruction.getIntermResult()) + " from DIV to src2 of DRF!");
+                        //System.out.println("Forwarding " + String.valueOf(div4s.outputInstruction.getIntermResult()) + " from DIV to src2 of DRF!");
                         drfs.inputInstruction.setsReg2Val(div4s.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc2Forwarded(true);
                     }
