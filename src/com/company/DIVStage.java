@@ -38,8 +38,6 @@ public class DIVStage {
             case DIV:
                 if (performsDivision) {
                     if (inputInstruction.getsReg2Addr() != -1) {
-                        System.out.println("I am gonna divide " + String.valueOf(inputInstruction.getsReg1Val()) +
-                        " by " + String.valueOf(inputInstruction.getsReg2Val()));
                         inputInstruction.setIntermResult(inputInstruction.getsReg1Val() / inputInstruction.getsReg2Val());
                     } else {
                         inputInstruction.setIntermResult(inputInstruction.getsReg1Val() / inputInstruction.getLiteral());

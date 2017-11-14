@@ -52,7 +52,6 @@ public class Pipeline {
 
     public static void Simulate(int clockCycles) {
 
-        //System.out.println(" F  | DRF|  EX|MUL1|MUL2| MEM|  WB| Cycle no.");
         for (int i = 1; i <= clockCycles; i++) {
 
             wbs.execute();
@@ -77,10 +76,6 @@ public class Pipeline {
 
             fs.execute();
 
-            //System.out.println(String.format("%1$4s", fs.getCurInstr()) + "|" + String.format("%1$4s", drfs.getCurInstr())
-            //        + "|" + String.format("%1$4s", exs.getCurInstr()) + "|" + String.format("%1$4s", mul1s.getCurInstr())
-            //        + "|" + String.format("%1$4s", mul2s.getCurInstr()) + "|" + String.format("%1$4s", mems.getCurInstr())
-            //        + "|" + String.format("%1$4s", wbs.getCurInstr()) + "|   " + String.valueOf(i));
             System.out.println("Cycle " + String.valueOf(i) + ":");
             System.out.println("Fetch       : " + fs.getCurInstr() + " " + fs.getCurInstrString() + " " + fs.getStalledStr());
             System.out.println("DRF         : " + drfs.getCurInstr() + " " + drfs.getCurInstrString() + " " + drfs.getStalledStr());
@@ -97,6 +92,7 @@ public class Pipeline {
 
             DataForwarding();
 
+            // If DRF stage is stalled, Fetch is stalled too.
             if (drfs.isStalled()) {
                 fs.setStalled(true);
             }
@@ -104,6 +100,7 @@ public class Pipeline {
                 fs.setStalled(false);
             }
 
+            // In case of branching, flush the instructions in DRF and F stage and start fetching from target address
             if (branch) {
                 drfs.outputInstruction = null;
                 fs.outputInstruction = null;
@@ -111,10 +108,12 @@ public class Pipeline {
                 branch = false;
             }
 
+            // If pipeline is halted, stop fetching.
             if (halted) {
-                //drfs.outputInstruction = null;
                 fs.outputInstruction = null;
             }
+
+            // Logic for sending instructions from one stage to the next
 
             // WB <-- MEM
             wbs.inputInstruction = mems.outputInstruction;
@@ -122,33 +121,36 @@ public class Pipeline {
             // MEM <-- MUL, EX, DIV
             // Selection Logic
             if (div4s.outputInstruction == null) {
+                // No instruction at DIV4, check between MUL2 and INTFU
+
                 if (mul2s.outputInstruction == null && exs.outputInstruction == null) {
-                    //System.out.println("1");
+                    // Both MUL2 and INTFU have no instructions
                     mems.inputInstruction = null;
+
                 } else if (mul2s.outputInstruction != null && exs.outputInstruction == null) {
-                    //System.out.println("2");
+                    // There is instruction at MUL2
                     mul2s.setStalled(false);
                     mul1s.setStalled(false);
                     mems.inputInstruction = mul2s.outputInstruction;
                     mul2s.outputInstruction = null;
+
                 } else if (mul2s.outputInstruction == null && exs.outputInstruction != null) {
-                    //System.out.println("3");
+                    // There is instruction at INTFU
                     exs.setStalled(false);
                     mems.inputInstruction = exs.outputInstruction;
                     exs.outputInstruction = null;
+
                 } else {
-                    // Collision! Give preference to MUL instructions
-                    //System.out.println("Collision between MUL and EX!");
+                    // Both MUL2 and INTFU have instructions. Give preference to MUL instructions
                     mul1s.setStalled(false);
                     mul2s.setStalled(false);
                     mems.inputInstruction = mul2s.outputInstruction;
                     mul2s.outputInstruction = null;
-                    // Now stall EX and things before it.
                     exs.setStalled(true);
                 }
             }
             else {
-                //System.out.println("5");
+                // There is instruction at DIV4. Give preference to this DIV4 instruction.
                 mems.inputInstruction = div4s.outputInstruction;
                 div4s.outputInstruction = null;
 
@@ -162,9 +164,8 @@ public class Pipeline {
 
             // MUL2 <-- MUL1
             if (! mul2s.isStalled()) {
+                // Multiply units are not stalled. Instructions can be given from MUL1 to MUL2.
                 mul2s.inputInstruction = mul1s.outputInstruction;
-                // NEW LINE!!!
-                //mul1s.outputInstruction = null;
                 mul1s.setStalled(false);
             }
 
@@ -173,23 +174,24 @@ public class Pipeline {
             div3s.inputInstruction = div2s.outputInstruction;
             div2s.inputInstruction = div1s.outputInstruction;
 
-            // MUL, EX <-- DRF
+            // DIV, MUL, EX <-- DRF
             // Splitting Logic
             if (drfs.outputInstruction != null) {
 
                 if ((drfs.outputInstruction.getOpCode() == Commons.I.DIV
                         || drfs.outputInstruction.getOpCode() == Commons.I.HALT)
                         && div1s.inputInstruction != drfs.outputInstruction) {
-                    //System.out.println("Spl 1");
+                    // This is a DIV or HALT instruction in DRF stage.
                     div1s.inputInstruction = drfs.outputInstruction;
                     if (! mul1s.isStalled())
                         mul1s.inputInstruction = null;
                     if (! exs.isStalled())
                         exs.inputInstruction = null;
                 }
+
                 else if ((drfs.outputInstruction.getOpCode() == Commons.I.MUL)
                         && mul1s.inputInstruction != drfs.outputInstruction) {
-                    //System.out.println("Spl 2");
+                    // This is a MUL instruction in DRF stage.
                     if ( ! mul1s.isStalled()) {
                         drfs.setMulStalled(false);
                         mul1s.inputInstruction = drfs.outputInstruction;
@@ -197,12 +199,13 @@ public class Pipeline {
                     else {
                         drfs.setMulStalled(true);
                     }
-                    div1s.inputInstruction = null;
                     if (! exs.isStalled())
                         exs.inputInstruction = null;
+                    div1s.inputInstruction = null;
+                }
 
-                } else if (exs.inputInstruction != drfs.outputInstruction) {
-                    //System.out.println("Spl 3");
+                else if (exs.inputInstruction != drfs.outputInstruction) {
+                    // All other instructions
                     if ( ! exs.isStalled()) {
                         drfs.setExStalled(false);
                         exs.inputInstruction = drfs.outputInstruction;
@@ -215,8 +218,7 @@ public class Pipeline {
                 }
             }
             else {
-                //System.out.println("Spl 4");
-                // This will create problems if they're stalled!
+                // No instruction at output of DRF
                 div1s.inputInstruction = null;
                 if (! mul1s.isStalled())
                     mul1s.inputInstruction = null;
@@ -253,6 +255,7 @@ public class Pipeline {
         src1 = drfs.inputInstruction.getsReg1Addr();
         src2 = drfs.inputInstruction.getsReg2Addr();
 
+        // Do forwarding only if the instruction in DRF has not fetched all registers
         if (! drfs.inputInstruction.isRegistersFetched()) {
 
             // Forwarding from EX to DRF
@@ -276,7 +279,7 @@ public class Pipeline {
                 // Forward the flags
                 if (exs.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
                     zeroFlag = (exs.outputInstruction.getIntermResult() == 0);
-                    System.out.println("Forwarding " + String.valueOf(zeroFlag) + " zero flag value from EX to DRF!");
+                    //System.out.println("Forwarding " + String.valueOf(zeroFlag) + " zero flag value from EX to DRF!");
                     drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
                     drfs.inputInstruction.setFlagsForwarded(true);
                 }
@@ -303,7 +306,7 @@ public class Pipeline {
                 // Forward the flags
                 if (mul2s.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
                     zeroFlag = (mul2s.outputInstruction.getIntermResult() == 0);
-                    System.out.println("Forwarding " + String.valueOf(zeroFlag) + " zero flag value from MUL2 to DRF!");
+                    //System.out.println("Forwarding " + String.valueOf(zeroFlag) + " zero flag value from MUL2 to DRF!");
                     drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
                     drfs.inputInstruction.setFlagsForwarded(true);
                 }
@@ -330,7 +333,7 @@ public class Pipeline {
                 // Forward the flags
                 if (div4s.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
                     zeroFlag = (div4s.outputInstruction.getIntermResult() == 0);
-                    System.out.println("Forwarding " + String.valueOf(zeroFlag) + " zero flag value from DIV to DRF!");
+                    //System.out.println("Forwarding " + String.valueOf(zeroFlag) + " zero flag value from DIV to DRF!");
                     drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
                     drfs.inputInstruction.setFlagsForwarded(true);
                 }
