@@ -35,6 +35,8 @@ public class Main {
             switch (choice) {
                 case 1:
                     RegisterFile.SetupRegisters();
+                    PhysicalRegisterFile.SetupRegisters();
+                    IssueQueue.SetupIssueQueue();
                     CodeMemory.readFromFile(args[0]);
                     DataMemory.initialize();
                     Pipeline.Setup();

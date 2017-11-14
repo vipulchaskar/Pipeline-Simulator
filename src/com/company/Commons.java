@@ -8,6 +8,8 @@ public class Commons {
     public static final int dataAddressLength = 4;
     public static final int dataTotalLocations = 4000;
     public static final int totalRegisters = 16;
+    public static final int totalPhysicalRegisters = 32;
+    public static final int totalIssueQueueEntries = 16;
 
     public enum I {
         ADD,
@@ -27,5 +29,11 @@ public class Commons {
         XOR,
         NOOP,
         JAL
+    }
+
+    public enum FU {
+        DIV,
+        MUL,
+        INT
     }
 }
