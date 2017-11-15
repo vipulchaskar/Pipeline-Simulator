@@ -15,7 +15,7 @@ public class IssueQueue {
         return (issueQueue.size() >= Commons.totalIssueQueueEntries);
     }
 
-    public static void add(InstructionInfo newInstrn, int lsqIndex, boolean src1Ready, boolean src2Ready) {
+    public static void add(InstructionInfo newInstrn) {
 
         IQEntry newIQEntry = new IQEntry();
 
@@ -27,13 +27,9 @@ public class IssueQueue {
         else
             newIQEntry.setFuType(Commons.FU.INT);
 
-        // Set the LSQ index as given by previous stage
-        // TODO: This line is redundant and should be removed when previous stage takes care of this.
-        newInstrn.setLsqIndex(lsqIndex);
-
         // Set the ready bit flags as appropriate
-        newIQEntry.setSrc1Ready(src1Ready);
-        newIQEntry.setSrc2Ready(src2Ready);
+        newIQEntry.setSrc1Ready(newInstrn.isSrc1Forwarded());
+        newIQEntry.setSrc2Ready(newInstrn.isSrc2Forwarded());
 
         // Set the actual instruction to one that was passed
         newIQEntry.setIns(newInstrn);

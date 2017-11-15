@@ -23,10 +23,10 @@ public class Pipeline {
         exs = new EXStage();
         mul1s = new MUL1Stage();
         mul2s = new MUL2Stage();
-        div1s = new DIVStage(true);
-        div2s = new DIVStage(false);
-        div3s = new DIVStage(false);
-        div4s = new DIVStage(false);
+        div1s = new DIVStage(true, false);
+        div2s = new DIVStage(false, false);
+        div3s = new DIVStage(false, false);
+        div4s = new DIVStage(false, true);
         mems = new MEMStage();
         wbs = new WBStage();
         halted = false;
@@ -174,9 +174,23 @@ public class Pipeline {
             div3s.inputInstruction = div2s.outputInstruction;
             div2s.inputInstruction = div1s.outputInstruction;
 
-            // DIV, MUL, EX <-- DRF
+            // DIV, MUL, EX <-- IQ
+            InstructionInfo newInstruction = IssueQueue.getNextInstruction(Commons.FU.DIV);
+            if (newInstruction != null)
+                div1s.inputInstruction = newInstruction;
+            newInstruction = IssueQueue.getNextInstruction(Commons.FU.MUL);
+            if (newInstruction != null)
+                mul1s.inputInstruction = newInstruction;
+            newInstruction = IssueQueue.getNextInstruction(Commons.FU.INT);
+            if (newInstruction != null)
+                exs.inputInstruction = newInstruction;
+
+
+            // IQ <-- DRF
             // Splitting Logic
-            if (drfs.outputInstruction != null) {
+            if (drfs.outputInstruction != null)
+                IssueQueue.add(drfs.outputInstruction);
+            /*if (drfs.outputInstruction != null) {
 
                 if ((drfs.outputInstruction.getOpCode() == Commons.I.DIV
                         || drfs.outputInstruction.getOpCode() == Commons.I.HALT)
@@ -224,7 +238,7 @@ public class Pipeline {
                     mul1s.inputInstruction = null;
                 if (! exs.isStalled())
                     exs.inputInstruction = null;
-            }
+            }*/
 
             // DRF <-- F
             if (drfs.isExStalled())
@@ -255,6 +269,35 @@ public class Pipeline {
         src1 = drfs.inputInstruction.getsReg1Addr();
         src2 = drfs.inputInstruction.getsReg2Addr();
 
+        // Forwarding to IQ
+
+        // Forwarding from EX to IQ
+        if (exs.outputInstruction != null && exs.outputInstruction.getOpCode() != Commons.I.LOAD) {
+            int exd = exs.outputInstruction.getdRegAddr();
+            int data = exs.outputInstruction.getIntermResult();
+            if (exd != -1) {
+                IssueQueue.GetForwardedData(exd, data);
+            }
+        }
+        // Forwarding from MUL2 to IQ
+        if (mul2s.outputInstruction != null) {
+            int mul2d = mul2s.outputInstruction.getdRegAddr();
+            int data = mul2s.outputInstruction.getIntermResult();
+            if (mul2d != -1) {
+                IssueQueue.GetForwardedData(mul2d, data);
+            }
+        }
+        // Forwarding from DIV4 to IQ
+        if (div4s.outputInstruction != null && div4s.outputInstruction.getOpCode() != Commons.I.LOAD) {
+            int div4d = div4s.outputInstruction.getdRegAddr();
+            int data = div4s.outputInstruction.getIntermResult();
+            if (div4d != -1) {
+                IssueQueue.GetForwardedData(div4d, data);
+            }
+        }
+
+        // Forwarding to instruction in DRF
+
         // Do forwarding only if the instruction in DRF has not fetched all registers
         if (! drfs.inputInstruction.isRegistersFetched()) {
 
@@ -264,13 +307,11 @@ public class Pipeline {
                 int exd = exs.outputInstruction.getdRegAddr();
                 if (exd != -1) {
                     if (exd == src1) {
-                        //System.out.println("Forwarding " + String.valueOf(exs.outputInstruction.getIntermResult()) + "from EX to src1 of DRF!");
                         drfs.inputInstruction.setsReg1Val(exs.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc1Forwarded(true);
                     }
 
                     if (exd == src2) {
-                        //System.out.println("Forwarding " + String.valueOf(exs.outputInstruction.getIntermResult()) + "from EX to src2 of DRF!");
                         drfs.inputInstruction.setsReg2Val(exs.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc2Forwarded(true);
                     }
@@ -279,7 +320,6 @@ public class Pipeline {
                 // Forward the flags
                 if (exs.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
                     zeroFlag = (exs.outputInstruction.getIntermResult() == 0);
-                    //System.out.println("Forwarding " + String.valueOf(zeroFlag) + " zero flag value from EX to DRF!");
                     drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
                     drfs.inputInstruction.setFlagsForwarded(true);
                 }
@@ -291,13 +331,11 @@ public class Pipeline {
                 int mul2d = mul2s.outputInstruction.getdRegAddr();
                 if (mul2d != -1) {
                     if (mul2d == src1) {
-                        //System.out.println("Forwarding " + String.valueOf(mul2s.outputInstruction.getIntermResult()) + "from MUL to src1 of DRF!");
                         drfs.inputInstruction.setsReg1Val(mul2s.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc1Forwarded(true);
                     }
 
                     if (mul2d == src2) {
-                        //System.out.println("Forwarding " + String.valueOf(mul2s.outputInstruction.getIntermResult()) + "from MUL to src2 of DRF!");
                         drfs.inputInstruction.setsReg2Val(mul2s.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc2Forwarded(true);
                     }
@@ -306,7 +344,6 @@ public class Pipeline {
                 // Forward the flags
                 if (mul2s.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
                     zeroFlag = (mul2s.outputInstruction.getIntermResult() == 0);
-                    //System.out.println("Forwarding " + String.valueOf(zeroFlag) + " zero flag value from MUL2 to DRF!");
                     drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
                     drfs.inputInstruction.setFlagsForwarded(true);
                 }
@@ -318,13 +355,11 @@ public class Pipeline {
                 int div4d = div4s.outputInstruction.getdRegAddr();
                 if (div4d != -1) {
                     if (div4d == src1) {
-                        //System.out.println("Forwarding " + String.valueOf(div4s.outputInstruction.getIntermResult()) + " from DIV to src1 of DRF!");
                         drfs.inputInstruction.setsReg1Val(div4s.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc1Forwarded(true);
                     }
 
                     if (div4d == src2) {
-                        //System.out.println("Forwarding " + String.valueOf(div4s.outputInstruction.getIntermResult()) + " from DIV to src2 of DRF!");
                         drfs.inputInstruction.setsReg2Val(div4s.outputInstruction.getIntermResult());
                         drfs.inputInstruction.setSrc2Forwarded(true);
                     }
@@ -333,14 +368,13 @@ public class Pipeline {
                 // Forward the flags
                 if (div4s.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
                     zeroFlag = (div4s.outputInstruction.getIntermResult() == 0);
-                    //System.out.println("Forwarding " + String.valueOf(zeroFlag) + " zero flag value from DIV to DRF!");
                     drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
                     drfs.inputInstruction.setFlagsForwarded(true);
                 }
             }
 
-            // Trigger the interlocking logic to see if instruction can be moved ahead after forwarding
-            drfs.InterLockingLogic();
+            // Trigger the stalling logic to see if instruction can be moved ahead after forwarding
+            // drfs.StallingLogic();
         }
     }
 

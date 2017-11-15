@@ -11,11 +11,6 @@ public class EXStage {
     }
 
     public void execute() {
-        /*if (stalled || inputInstruction == null) {
-            if (inputInstruction == null)
-                outputInstruction = null;
-            return;
-        }*/
         if (stalled && outputInstruction != null)
             return;
 
@@ -33,6 +28,9 @@ public class EXStage {
                 else {
                     inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
                 }
+                PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
+                PhysicalRegisterFile.SetZFlag(inputInstruction.getdRegAddr(), (inputInstruction.getIntermResult() == 0));
+                PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case SUB:
@@ -42,16 +40,15 @@ public class EXStage {
                 else {
                     inputInstruction.setIntermResult(inputInstruction.getsReg1Val() - inputInstruction.getLiteral());
                 }
-                break;
-
-            case ADDC:
-                inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
+                PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
+                PhysicalRegisterFile.SetZFlag(inputInstruction.getdRegAddr(), (inputInstruction.getIntermResult() == 0));
+                PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case MUL:
-                break;
-
             case DIV:
+            case HALT:
+            case NOOP:
                 break;
 
             case LOAD:
@@ -64,6 +61,8 @@ public class EXStage {
 
             case MOVC:
                 inputInstruction.setIntermResult(inputInstruction.getLiteral());
+                PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
+                PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case AND:
@@ -73,6 +72,8 @@ public class EXStage {
                 else {
                     inputInstruction.setIntermResult(inputInstruction.getsReg1Val() & inputInstruction.getLiteral());
                 }
+                PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
+                PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
             case OR:
@@ -82,8 +83,9 @@ public class EXStage {
                 else {
                     inputInstruction.setIntermResult(inputInstruction.getsReg1Val() | inputInstruction.getLiteral());
                 }
+                PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
+                PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
-
 
             case XOR:
                 if (inputInstruction.getsReg2Addr() != -1) {
@@ -92,13 +94,13 @@ public class EXStage {
                 else {
                     inputInstruction.setIntermResult(inputInstruction.getsReg1Val() ^ inputInstruction.getLiteral());
                 }
+                PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
+                PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
-
 
             case BZ:
                 if ((inputInstruction.isFlagsForwarded() && inputInstruction.isForwardedZeroFlag())) {
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
-                    // Flags.setZero(false);
                 }
                 else if (!Flags.getBusy() && Flags.getZero()) {
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
@@ -108,7 +110,6 @@ public class EXStage {
             case BNZ:
                 if ((inputInstruction.isFlagsForwarded() && !inputInstruction.isForwardedZeroFlag())) {
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
-                    // Flags.setZero(false);
                 }
                 else if (!Flags.getBusy() && !Flags.getZero()) {
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
@@ -120,15 +121,11 @@ public class EXStage {
                 Pipeline.TakeBranch(inputInstruction.getIntermResult());
                 break;
 
-            case HALT:
-                break;
-
-            case NOOP:
-                break;
-
             case JAL:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
                 Pipeline.TakeBranch(inputInstruction.getIntermResult());
+                PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
+                PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 
 

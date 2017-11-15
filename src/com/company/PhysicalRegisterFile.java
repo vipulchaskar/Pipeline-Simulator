@@ -28,6 +28,38 @@ public class PhysicalRegisterFile {
         }
     }
 
+    public static boolean FreePhysicalRegisterAvailable() {
+
+        for (int i = 0; i < Commons.totalPhysicalRegisters; i++) {
+            if (! physicalRegisters.get(i).isAllocated())
+                return true;
+        }
+        return false;
+    }
+
+    public static int GetNewPhysicalRegister() {
+
+        boolean found = false;
+        int newIndex;
+
+        for (newIndex = 0; newIndex < Commons.totalPhysicalRegisters; newIndex++) {
+            if (! physicalRegisters.get(newIndex).isAllocated()) {
+                found = true;
+                break;
+            }
+        }
+
+        if (! found)
+            return -1;
+
+        physicalRegisters.get(newIndex).setAllocated(true);
+        physicalRegisters.get(newIndex).setRenamed(false);
+        physicalRegisters.get(newIndex).setStatus(false);
+        physicalRegisters.get(newIndex).setzFlag(false);
+
+        return newIndex;
+    }
+
     public static void WriteToRegister(int index, int value) {
         if (index < 0 || index >= Commons.totalPhysicalRegisters) {
             System.out.println("Error writing to physical register! Illegal index no. (" + index + ") given");

@@ -5,10 +5,12 @@ public class DIVStage {
     public InstructionInfo inputInstruction;
     public boolean stalled;
     private boolean performsDivision;
+    private boolean writesResult;
 
-    public DIVStage(boolean performsDivision) {
+    public DIVStage(boolean performsDivision, boolean writesResult) {
         stalled = false;
         this.performsDivision = performsDivision;
+        this.writesResult = writesResult;
     }
 
     public DIVStage() {
@@ -24,15 +26,19 @@ public class DIVStage {
 
         switch (inputInstruction.getOpCode()) {
             case ADD:
-                break;
-
             case SUB:
-                break;
-
-            case ADDC:
-                break;
-
             case MUL:
+            case LOAD:
+            case STORE:
+            case MOVC:
+            case AND:
+            case OR:
+            case XOR:
+            case BZ:
+            case BNZ:
+            case JUMP:
+            case HALT:
+            case NOOP:
                 break;
 
             case DIV:
@@ -43,39 +49,11 @@ public class DIVStage {
                         inputInstruction.setIntermResult(inputInstruction.getsReg1Val() / inputInstruction.getLiteral());
                     }
                 }
-                break;
-
-            case LOAD:
-                break;
-
-            case STORE:
-                break;
-
-            case MOVC:
-                break;
-
-            case AND:
-                break;
-
-            case OR:
-                break;
-
-            case XOR:
-                break;
-
-            case BZ:
-                break;
-
-            case BNZ:
-                break;
-
-            case JUMP:
-                break;
-
-            case HALT:
-                break;
-
-            case NOOP:
+                if (writesResult) {
+                    PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
+                    PhysicalRegisterFile.SetZFlag(inputInstruction.getdRegAddr(), (inputInstruction.getIntermResult() == 0));
+                    PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
+                }
                 break;
 
             default:

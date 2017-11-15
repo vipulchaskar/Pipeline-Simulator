@@ -18,12 +18,19 @@ public class MUL1Stage {
 
         switch (inputInstruction.getOpCode()) {
             case ADD:
-                break;
-
             case SUB:
-                break;
-
-            case ADDC:
+            case DIV:
+            case LOAD:
+            case STORE:
+            case MOVC:
+            case AND:
+            case OR:
+            case XOR:
+            case BZ:
+            case BNZ:
+            case JUMP:
+            case HALT:
+            case NOOP:
                 break;
 
             case MUL:
@@ -33,48 +40,6 @@ public class MUL1Stage {
                 else {
                     inputInstruction.setIntermResult(inputInstruction.getsReg1Val() * inputInstruction.getLiteral());
                 }
-                break;
-
-            case DIV:
-                if (inputInstruction.getsReg2Addr() != -1) {
-                    inputInstruction.setIntermResult(inputInstruction.getsReg1Val() / inputInstruction.getsReg2Val());
-                }
-                else {
-                    inputInstruction.setIntermResult(inputInstruction.getsReg1Val() / inputInstruction.getLiteral());
-                }
-                break;
-
-            case LOAD:
-                break;
-
-            case STORE:
-                break;
-
-            case MOVC:
-                break;
-
-            case AND:
-                break;
-
-            case OR:
-                break;
-
-            case XOR:
-                break;
-
-            case BZ:
-                break;
-
-            case BNZ:
-                break;
-
-            case JUMP:
-                break;
-
-            case HALT:
-                break;
-
-            case NOOP:
                 break;
 
             default:
