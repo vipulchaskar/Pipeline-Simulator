@@ -152,5 +152,9 @@ public class PhysicalRegisterFile {
         return physicalRegisters.get(index).iszFlag();
     }
 
+    public static void printAll() {
+        System.out.println(String.valueOf(rename_table));
+    }
+
 }
 

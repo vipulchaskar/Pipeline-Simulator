@@ -100,30 +100,34 @@ public class EXStage {
 
             case BZ:
                 if ((inputInstruction.isFlagsForwarded() && inputInstruction.isForwardedZeroFlag())) {
-                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
+                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
+                            inputInstruction.getPC());
                 }
                 else if (!Flags.getBusy() && Flags.getZero()) {
-                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
+                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
+                            inputInstruction.getPC());
                 }
                 break;
 
             case BNZ:
                 if ((inputInstruction.isFlagsForwarded() && !inputInstruction.isForwardedZeroFlag())) {
-                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
+                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
+                            inputInstruction.getPC());
                 }
                 else if (!Flags.getBusy() && !Flags.getZero()) {
-                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral());
+                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
+                            inputInstruction.getPC());
                 }
                 break;
 
             case JUMP:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
-                Pipeline.TakeBranch(inputInstruction.getIntermResult());
+                Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getPC());
                 break;
 
             case JAL:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
-                Pipeline.TakeBranch(inputInstruction.getIntermResult());
+                Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getPC());
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;

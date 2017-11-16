@@ -4,15 +4,18 @@ public class Register {
 
     private int value;
     private boolean valid;
+    private boolean zFlag;
 
     public Register() {
         value = 0;
         valid = true;
+        zFlag = false;
     }
 
-    public Register(int value, boolean valid) {
+    public Register(int value, boolean valid, boolean zFlag) {
         this.value = value;
         this.valid = valid;
+        this.zFlag = zFlag;
     }
 
     public int getValue() {
@@ -29,5 +32,13 @@ public class Register {
 
     public void setValid(boolean valid) {
         this.valid = valid;
+    }
+
+    public boolean iszFlag() {
+        return zFlag;
+    }
+
+    public void setzFlag(boolean zFlag) {
+        this.zFlag = zFlag;
     }
 }

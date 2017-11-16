@@ -474,7 +474,7 @@ public class DRFStage {
                         break;
                 }
 
-                inputInstruction.setRegistersFetched(true);
+                //inputInstruction.setRegistersFetched(true);
 
                 // All input operands fetched. Let's give this instruction to output latch.
                 outputInstruction = inputInstruction;

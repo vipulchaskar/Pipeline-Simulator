@@ -51,4 +51,23 @@ public class RegisterFile {
 
         return registers.get(index).isValid();
     }
+
+    public static void SetRegisterZFlag(int index, boolean zFlag) {
+        if (index < 0 || index >= Commons.totalRegisters) {
+            System.out.println("Error setting register ZFlag! Illegal index no. (" + index + ") given");
+            return;
+        }
+
+        registers.get(index).setzFlag(zFlag);
+    }
+
+    public static boolean GetRegisterZFlag(int index) {
+        if (index < 0 || index >= Commons.totalRegisters) {
+            System.out.println("Error getting register ZFlag! Illegal index no. (" + index + ") given");
+            return false;
+            // TODO: This is wrong!
+        }
+
+        return registers.get(index).iszFlag();
+    }
 }

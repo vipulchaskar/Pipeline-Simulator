@@ -6,6 +6,7 @@ public class IQEntry {
     private InstructionInfo ins;
     private FU fuType;
     private boolean src1Ready, src2Ready;
+    private int clockCycle;
 
     public InstructionInfo getIns() {
         return ins;
@@ -38,4 +39,13 @@ public class IQEntry {
     public void setSrc2Ready(boolean src2Ready) {
         this.src2Ready = src2Ready;
     }
+
+    public int getClockCycle() {
+        return clockCycle;
+    }
+
+    public void setClockCycle(int clockCycle) {
+        this.clockCycle = clockCycle;
+    }
 }
+

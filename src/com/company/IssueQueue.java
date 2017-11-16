@@ -15,7 +15,7 @@ public class IssueQueue {
         return (issueQueue.size() >= Commons.totalIssueQueueEntries);
     }
 
-    public static void add(InstructionInfo newInstrn) {
+    public static void add(InstructionInfo newInstrn, int clockCycle) {
 
         IQEntry newIQEntry = new IQEntry();
 
@@ -31,6 +31,9 @@ public class IssueQueue {
         newIQEntry.setSrc1Ready(newInstrn.isSrc1Forwarded());
         newIQEntry.setSrc2Ready(newInstrn.isSrc2Forwarded());
 
+        // Record the clock Cycle when this instruction was dispatched.
+        newIQEntry.setClockCycle(clockCycle);
+
         // Set the actual instruction to one that was passed
         newIQEntry.setIns(newInstrn);
 
@@ -39,19 +42,36 @@ public class IssueQueue {
 
     public static InstructionInfo getNextInstruction(Commons.FU fuType) {
 
+        int earliestClockCycle = 100000;
+        IQEntry earliestInstruction = null;
+
         // Return the first instruction which requires the "fuType" FU and has fetched all operands.
         for(IQEntry instruction : issueQueue) {
-            if(instruction.getFuType() == fuType && instruction.isSrc1Ready() && instruction.isSrc2Ready()) {
-                InstructionInfo ins = instruction.getIns();
-                issueQueue.remove(instruction);
-                return ins;
+
+            System.out.println("Looking to see if I can send instruction " + instruction.getIns().getInsString()
+            + " which has " + String.valueOf(instruction.isSrc1Ready()) + " & " + String.valueOf(instruction.isSrc2Ready()));
+
+            if(instruction.getFuType() == fuType && instruction.isSrc1Ready() && instruction.isSrc2Ready()
+                    && instruction.getClockCycle() < earliestClockCycle) {
+
+                earliestClockCycle = instruction.getClockCycle();
+                earliestInstruction = instruction;
             }
+        }
+
+        if (earliestInstruction != null) {
+            InstructionInfo ins = earliestInstruction.getIns();
+            issueQueue.remove(earliestInstruction);
+            return ins;
         }
 
         return null;
     }
 
     public static void GetForwardedData(int registerAddress, int data) {
+
+        System.out.println("IQ got forward for register " + String.valueOf(registerAddress) + " with data "
+        + String.valueOf(data));
 
         for(IQEntry instruction : issueQueue) {
             if(! instruction.getIns().isRegistersFetched()) {
@@ -70,5 +90,25 @@ public class IssueQueue {
 
             }
         }
+    }
+
+    public static void FlushInstructions(int branchInstrAddress) {
+
+        for (IQEntry instruction : issueQueue) {
+            if (instruction.getIns().getPC() > branchInstrAddress) {
+                issueQueue.remove(instruction);
+            }
+        }
+    }
+
+    public static String printCurrentInstructions() {
+
+        StringBuilder outputString = new StringBuilder("[ ");
+
+        for (IQEntry instruction : issueQueue) {
+            outputString.append(instruction.getIns().getInsString());
+        }
+
+        return outputString.toString();
     }
 }

@@ -5,6 +5,7 @@ public class Pipeline {
     private static boolean halted = false;
     private static boolean branch = false;
     private static int targetAddress;
+    private static int branchInstrAddress;
     private static FStage fs;
     private static DRFStage drfs;
     private static EXStage exs;
@@ -33,9 +34,10 @@ public class Pipeline {
         branch = false;
     }
 
-    public static void TakeBranch(int newTargetAddress) {
+    public static void TakeBranch(int newTargetAddress, int currentInstructionAddress) {
         branch = true;
         targetAddress = newTargetAddress;
+        branchInstrAddress = currentInstructionAddress;
     }
 
     public static boolean IsBranching() {
@@ -79,6 +81,7 @@ public class Pipeline {
             System.out.println("Cycle " + String.valueOf(i) + ":");
             System.out.println("Fetch       : " + fs.getCurInstr() + " " + fs.getCurInstrString() + " " + fs.getStalledStr());
             System.out.println("DRF         : " + drfs.getCurInstr() + " " + drfs.getCurInstrString() + " " + drfs.getStalledStr());
+            System.out.println("IQ          : " + IssueQueue.printCurrentInstructions());
             System.out.println("INTFU       : " + exs.getCurInstr() + " " + exs.getCurInstrString() + " " + exs.getStalledStr());
             System.out.println("MUL1        : " + mul1s.getCurInstr() + " " + mul1s.getCurInstrString() + " " + mul1s.getStalledStr());
             System.out.println("MUL2        : " + mul2s.getCurInstr() + " " + mul2s.getCurInstrString() + " " + mul2s.getStalledStr());
@@ -102,8 +105,7 @@ public class Pipeline {
 
             // In case of branching, flush the instructions in DRF and F stage and start fetching from target address
             if (branch) {
-                drfs.outputInstruction = null;
-                fs.outputInstruction = null;
+                FlushInstructions(branchInstrAddress);
                 fs.setNextInstAddress(targetAddress);
                 branch = false;
             }
@@ -175,21 +177,14 @@ public class Pipeline {
             div2s.inputInstruction = div1s.outputInstruction;
 
             // DIV, MUL, EX <-- IQ
-            InstructionInfo newInstruction = IssueQueue.getNextInstruction(Commons.FU.DIV);
-            if (newInstruction != null)
-                div1s.inputInstruction = newInstruction;
-            newInstruction = IssueQueue.getNextInstruction(Commons.FU.MUL);
-            if (newInstruction != null)
-                mul1s.inputInstruction = newInstruction;
-            newInstruction = IssueQueue.getNextInstruction(Commons.FU.INT);
-            if (newInstruction != null)
-                exs.inputInstruction = newInstruction;
-
+            div1s.inputInstruction = IssueQueue.getNextInstruction(Commons.FU.DIV);
+            mul1s.inputInstruction = IssueQueue.getNextInstruction(Commons.FU.MUL);
+            exs.inputInstruction = IssueQueue.getNextInstruction(Commons.FU.INT);
 
             // IQ <-- DRF
             // Splitting Logic
             if (drfs.outputInstruction != null)
-                IssueQueue.add(drfs.outputInstruction);
+                IssueQueue.add(drfs.outputInstruction, i);
             /*if (drfs.outputInstruction != null) {
 
                 if ((drfs.outputInstruction.getOpCode() == Commons.I.DIV
@@ -256,6 +251,8 @@ public class Pipeline {
                 fs.outputInstruction = null;
             }
         }
+
+        PhysicalRegisterFile.printAll();
     }
 
     public static void DataForwarding() {
@@ -263,11 +260,8 @@ public class Pipeline {
         int src2;
         boolean zeroFlag;
 
-        if (drfs.inputInstruction == null || branch)
+        if (branch)
             return;
-
-        src1 = drfs.inputInstruction.getsReg1Addr();
-        src2 = drfs.inputInstruction.getsReg2Addr();
 
         // Forwarding to IQ
 
@@ -298,8 +292,12 @@ public class Pipeline {
 
         // Forwarding to instruction in DRF
 
+
         // Do forwarding only if the instruction in DRF has not fetched all registers
-        if (! drfs.inputInstruction.isRegistersFetched()) {
+        if (drfs.inputInstruction != null && (! drfs.inputInstruction.isRegistersFetched())) {
+
+            src1 = drfs.inputInstruction.getsReg1Addr();
+            src2 = drfs.inputInstruction.getsReg2Addr();
 
             // Forwarding from EX to DRF
             if (exs.outputInstruction != null && exs.outputInstruction.getOpCode() != Commons.I.LOAD) {
@@ -376,6 +374,36 @@ public class Pipeline {
             // Trigger the stalling logic to see if instruction can be moved ahead after forwarding
             // drfs.StallingLogic();
         }
+    }
+
+    public static void FlushInstructions(int branchInstrAddress) {
+        drfs.outputInstruction = null;
+        fs.outputInstruction = null;
+
+        IssueQueue.FlushInstructions(branchInstrAddress);
+
+        if (exs.inputInstruction != null && exs.inputInstruction.getPC() > branchInstrAddress)
+            exs.inputInstruction = null;
+
+        if (mul1s.inputInstruction != null && mul1s.inputInstruction.getPC() > branchInstrAddress)
+            mul1s.inputInstruction = null;
+
+        if (mul2s.inputInstruction != null && mul2s.inputInstruction.getPC() > branchInstrAddress)
+            mul2s.inputInstruction = null;
+
+        if (div1s.inputInstruction != null && div1s.inputInstruction.getPC() > branchInstrAddress)
+            div1s.inputInstruction = null;
+
+        if (div2s.inputInstruction != null && div2s.inputInstruction.getPC() > branchInstrAddress)
+            div2s.inputInstruction = null;
+
+        if (div3s.inputInstruction != null && div3s.inputInstruction.getPC() > branchInstrAddress)
+            div3s.inputInstruction = null;
+
+        if (div4s.inputInstruction != null && div4s.inputInstruction.getPC() > branchInstrAddress)
+            div4s.inputInstruction = null;
+
+        // TODO: Also flush from ROB once it has been implemented? What about LSQ?
     }
 
     public static void RemoveFlagSettingCapability() {
