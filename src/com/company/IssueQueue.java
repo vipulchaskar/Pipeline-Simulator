@@ -109,6 +109,8 @@ public class IssueQueue {
             outputString.append(instruction.getIns().getInsString());
         }
 
+        outputString.append(" ]");
+
         return outputString.toString();
     }
 }

@@ -201,12 +201,10 @@ public class DRFStage {
             //if (DRegFree && SReg1Free && SReg2Free && FlagsAvailable) {
 
                 // Stalling logic satisfied.
-                //System.out.println("Stalling logic satisfied.");
                 stalled = false;
 
                 // So, the instruction is ready to go ahead. Fetch the register values, if we can.
                 switch (inputInstruction.getOpCode()) {
-                    //int src1PhyReg
                     case ADD:
                     case SUB:
                     case MUL:
@@ -391,6 +389,11 @@ public class DRFStage {
 
                     case BZ:
                     case BNZ:
+                        inputInstruction.setSrc1Forwarded(true);
+                        inputInstruction.setSrc2Forwarded(true);
+                        PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
+                        break;
+
                     case HALT:
                     case NOOP:
                         inputInstruction.setSrc1Forwarded(true);
@@ -429,6 +432,9 @@ public class DRFStage {
                         // Set the destination register field to the one allocated in step b. - N. A.
 
                         // Step h. Taken care of by IssueQueue.add() method.
+
+                        // Take backup of the physical registers and rename table for branch instructions
+                        PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
                         break;
 
                     case JAL:
@@ -467,6 +473,9 @@ public class DRFStage {
                         inputInstruction.setdRegAddr(newPhyRegAddr);
 
                         // Step h. Taken care of by IssueQueue.add() method.
+
+                        // Take backup of the physical registers and rename table for branch instructions
+                        PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
                         break;
 
                     default:
@@ -480,10 +489,7 @@ public class DRFStage {
                 outputInstruction = inputInstruction;
             } else {
                 // Interlocking logic not satisfied. Still waiting for IQ or physical registers to get free.
-                //System.out.println("Interlocking logic not satisfied for instruction " + inputInstruction.getInsString());
                 stalled = true;
-                //System.out.println(String.valueOf(DRegFree) + " " + String.valueOf(SReg1Free) + " " + String.valueOf(SReg2Free) +
-                //        " " + String.valueOf(FlagsAvailable));
                 outputInstruction = null;
             }
         }

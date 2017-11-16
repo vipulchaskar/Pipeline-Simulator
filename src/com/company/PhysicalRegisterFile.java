@@ -1,6 +1,24 @@
 package com.company;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+
+class PhysicalRegisterBackup {
+    public int [] bak_rename_table;
+    public boolean [] bak_rename_table_bit;
+    public int bak_psw_rename_table;
+    public boolean bak_psw_rename_table_bit;
+    public ArrayList<PhysicalRegister> bak_physicalRegisters;
+
+    PhysicalRegisterBackup(int [] bak_rename_table, boolean [] bak_rename_table_bit, int bak_psw_rename_table,
+                           boolean bak_psw_rename_table_bit, ArrayList<PhysicalRegister> bak_physicalRegisters) {
+        this.bak_rename_table = bak_rename_table;
+        this.bak_rename_table_bit = bak_rename_table_bit;
+        this.bak_psw_rename_table = bak_psw_rename_table;
+        this.bak_psw_rename_table_bit = bak_psw_rename_table_bit;
+        this.bak_physicalRegisters = bak_physicalRegisters;
+    }
+}
 
 public class PhysicalRegisterFile {
 
@@ -19,6 +37,8 @@ public class PhysicalRegisterFile {
     public static boolean psw_rename_table_bit;
 
     private static ArrayList<PhysicalRegister> physicalRegisters = new ArrayList<>();
+
+    private static HashMap<Integer, PhysicalRegisterBackup> backups = new HashMap<>();
 
     public static void SetupRegisters() {
         physicalRegisters = new ArrayList<>();
@@ -150,6 +170,23 @@ public class PhysicalRegisterFile {
         }
 
         return physicalRegisters.get(index).iszFlag();
+    }
+
+    public static void takeBackup(int PC) {
+        PhysicalRegisterBackup newBackup = new PhysicalRegisterBackup(rename_table.clone(), rename_table_bit.clone(),
+                psw_rename_table, psw_rename_table_bit, (ArrayList<PhysicalRegister>)physicalRegisters.clone());
+
+        backups.put(PC, newBackup);
+    }
+
+    public static void restoreBackup(int PC) {
+        PhysicalRegisterBackup backupToRestore = backups.get(PC);
+
+        rename_table = backupToRestore.bak_rename_table;
+        rename_table_bit = backupToRestore.bak_rename_table_bit;
+        psw_rename_table = backupToRestore.bak_psw_rename_table;
+        psw_rename_table_bit = backupToRestore.bak_psw_rename_table_bit;
+        physicalRegisters = backupToRestore.bak_physicalRegisters;
     }
 
     public static void printAll() {

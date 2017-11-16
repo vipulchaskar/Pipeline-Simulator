@@ -107,6 +107,7 @@ public class EXStage {
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
                             inputInstruction.getPC());
                 }
+                PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
                 break;
 
             case BNZ:
@@ -118,16 +119,19 @@ public class EXStage {
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
                             inputInstruction.getPC());
                 }
+                PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
                 break;
 
             case JUMP:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
                 Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getPC());
+                PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
                 break;
 
             case JAL:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
                 Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getPC());
+                PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
