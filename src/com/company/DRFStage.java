@@ -205,16 +205,14 @@ public class DRFStage {
 
                 // So, the instruction is ready to go ahead. Fetch the register values, if we can.
                 switch (inputInstruction.getOpCode()) {
+
                     case ADD:
                     case SUB:
                     case MUL:
                     case DIV:
-                    case AND:
-                    case OR:
-                    case XOR:
+                        int src1PhyRegAddr;
+                        int src2PhyRegAddr = -1;
                         // Step b.
-                        int src1PhyRegAddr,src2PhyRegAddr = -1;
-
                         // Look up physical register address for source registers
                         src1PhyRegAddr = PhysicalRegisterFile.rename_table[inputInstruction.getsReg1Addr()];
                         if (inputInstruction.getsReg2Addr() != -1) {
@@ -270,8 +268,73 @@ public class DRFStage {
 
                         // Step h. Taken care of by IssueQueue.add() method.
 
-                        // Arithmetic instruction. Must also mark Flags as busy.
-                        //Flags.setBusy(true);
+                        // Arithmetic instruction. Must also make a rename table entry for flags.
+                        // Latest value of flags will be found in a physical register (true)
+                        PhysicalRegisterFile.psw_rename_table_bit = true;
+                        // This is where latest value of flags will be found in case of physical register.
+                        PhysicalRegisterFile.psw_rename_table = newPhyRegAddr;
+                        break;
+
+                    case AND:
+                    case OR:
+                    case XOR:
+                        src2PhyRegAddr = -1;        // Things you do to make compiler happy
+                        // Step b.
+                        // Look up physical register address for source registers
+                        src1PhyRegAddr = PhysicalRegisterFile.rename_table[inputInstruction.getsReg1Addr()];
+                        if (inputInstruction.getsReg2Addr() != -1) {
+                            src2PhyRegAddr = PhysicalRegisterFile.rename_table[inputInstruction.getsReg2Addr()];
+                        }
+
+                        // Step b.
+                        // Assign the physical register for destination and update the rename table
+                        newPhyRegAddr = PhysicalRegisterFile.GetNewPhysicalRegister();
+                        PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
+                        PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
+
+                        // Step c.
+                        // Read out the value of source 1
+                        if (! PhysicalRegisterFile.rename_table_bit[inputInstruction.getsReg1Addr()]) {
+                            // Latest value for this source is in arch. register
+                            inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
+                            inputInstruction.setSrc1Forwarded(true);
+                        }
+                        else if (PhysicalRegisterFile.GetRegisterStatus(src1PhyRegAddr)) {
+                            // Latest value for this source is in physical register AND IT IS VALID.
+                            inputInstruction.setsReg1Val(PhysicalRegisterFile.ReadFromRegister(src1PhyRegAddr));
+                            inputInstruction.setSrc1Forwarded(true);
+                        }
+
+                        // Step c.
+                        // Read out the value of source 2
+                        if (inputInstruction.getsReg2Addr() == -1) {
+                            // Source 2 is a literal (This case takes care of step e)
+                            inputInstruction.setSrc2Forwarded(true);
+                        }
+                        else if (! PhysicalRegisterFile.rename_table_bit[inputInstruction.getsReg2Addr()]) {
+                            // Latest value for this source is in arch. register
+                            inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
+                            inputInstruction.setSrc2Forwarded(true);
+                        }
+                        else if (PhysicalRegisterFile.GetRegisterStatus(src2PhyRegAddr)) {
+                            // Latest value for this source is in physical register AND IT IS VALID.
+                            inputInstruction.setsReg2Val(PhysicalRegisterFile.ReadFromRegister(src2PhyRegAddr));
+                            inputInstruction.setSrc2Forwarded(true);
+                        }
+
+                        // Step d.
+                        // Set the source register address field to the physical address of the source register.
+                        inputInstruction.setsReg1Addr(src1PhyRegAddr);
+                        inputInstruction.setsReg2Addr(src2PhyRegAddr);
+
+                        // Step e taken care of by first case in step c.
+
+                        // Step f.
+                        // Set the destination register field to the one allocated in step b.
+                        inputInstruction.setdRegAddr(newPhyRegAddr);
+
+                        // Step h. Taken care of by IssueQueue.add() method.
+
                         break;
 
                     case LOAD:

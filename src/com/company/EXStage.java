@@ -99,11 +99,27 @@ public class EXStage {
                 break;
 
             case BZ:
-                if ((inputInstruction.isFlagsForwarded() && inputInstruction.isForwardedZeroFlag())) {
+                // Flags already forwarded & forwarded zero flag is true
+                if ((inputInstruction.isFlagsForwarded() &&
+                        inputInstruction.isForwardedZeroFlag())) {
+
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
                             inputInstruction.getPC());
                 }
+
+                // Latest value of flags is in a physical register & That physical register is not busy &
+                // zero flag of that register is true.
+                else if (PhysicalRegisterFile.psw_rename_table_bit &&
+                        PhysicalRegisterFile.GetRegisterStatus(PhysicalRegisterFile.psw_rename_table) &&
+                        PhysicalRegisterFile.GetZFlag(PhysicalRegisterFile.psw_rename_table)) {
+
+                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
+                            inputInstruction.getPC());
+                }
+
+                // Latest value of flags is in architectural register and zero flag is set.
                 else if (!Flags.getBusy() && Flags.getZero()) {
+
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
                             inputInstruction.getPC());
                 }
@@ -111,11 +127,27 @@ public class EXStage {
                 break;
 
             case BNZ:
-                if ((inputInstruction.isFlagsForwarded() && !inputInstruction.isForwardedZeroFlag())) {
+                // Flags already forwarded & forwarded zero flag is false
+                if ((inputInstruction.isFlagsForwarded() &&
+                        !inputInstruction.isForwardedZeroFlag())) {
+
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
                             inputInstruction.getPC());
                 }
+
+                // Latest value of flags is in a physical register & That physical register is not busy &
+                // zero flag of that register is false.
+                else if (PhysicalRegisterFile.psw_rename_table_bit &&
+                        PhysicalRegisterFile.GetRegisterStatus(PhysicalRegisterFile.psw_rename_table) &&
+                        !PhysicalRegisterFile.GetZFlag(PhysicalRegisterFile.psw_rename_table)) {
+
+                    Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
+                            inputInstruction.getPC());
+                }
+
+                // Latest value of flags is in architectural register and zero flag is not set.
                 else if (!Flags.getBusy() && !Flags.getZero()) {
+
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
                             inputInstruction.getPC());
                 }
