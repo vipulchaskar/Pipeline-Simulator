@@ -10,6 +10,7 @@ public class Commons {
     public static final int totalRegisters = 16;
     public static final int totalPhysicalRegisters = 32;
     public static final int totalIssueQueueEntries = 16;
+    public static final int totalROBEntries = 32;
 
     public enum I {
         ADD,

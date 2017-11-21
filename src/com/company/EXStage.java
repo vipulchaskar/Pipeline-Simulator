@@ -164,7 +164,7 @@ public class EXStage {
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
                 Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getPC());
                 PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
-                PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
+                PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getPC() + Commons.codeInstructionLength);
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
                 break;
 

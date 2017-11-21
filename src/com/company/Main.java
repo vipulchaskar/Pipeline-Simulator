@@ -37,6 +37,7 @@ public class Main {
                     RegisterFile.SetupRegisters();
                     PhysicalRegisterFile.SetupRegisters();
                     IssueQueue.SetupIssueQueue();
+                    ROB.SetupROB();
                     CodeMemory.readFromFile(args[0]);
                     DataMemory.initialize();
                     Pipeline.Setup();
