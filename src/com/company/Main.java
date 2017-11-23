@@ -38,6 +38,7 @@ public class Main {
                     PhysicalRegisterFile.SetupRegisters();
                     IssueQueue.SetupIssueQueue();
                     ROB.SetupROB();
+                    LSQ.SetupLoadStoreQueue();
                     CodeMemory.readFromFile(args[0]);
                     DataMemory.initialize();
                     Pipeline.Setup();

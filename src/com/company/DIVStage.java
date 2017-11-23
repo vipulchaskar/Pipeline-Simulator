@@ -53,6 +53,9 @@ public class DIVStage {
                     PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                     PhysicalRegisterFile.SetZFlag(inputInstruction.getdRegAddr(), (inputInstruction.getIntermResult() == 0));
                     PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
+
+                    ROB.setResult(inputInstruction.getRobIndex(), inputInstruction.getIntermResult());
+                    ROB.setStatus(inputInstruction.getRobIndex(), true);
                 }
                 break;
 

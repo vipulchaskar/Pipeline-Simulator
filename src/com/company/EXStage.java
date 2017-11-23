@@ -31,6 +31,9 @@ public class EXStage {
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 PhysicalRegisterFile.SetZFlag(inputInstruction.getdRegAddr(), (inputInstruction.getIntermResult() == 0));
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
+
+                ROB.setResult(inputInstruction.getRobIndex(), inputInstruction.getIntermResult());
+                ROB.setStatus(inputInstruction.getRobIndex(), true);
                 break;
 
             case SUB:
@@ -43,6 +46,9 @@ public class EXStage {
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 PhysicalRegisterFile.SetZFlag(inputInstruction.getdRegAddr(), (inputInstruction.getIntermResult() == 0));
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
+
+                ROB.setResult(inputInstruction.getRobIndex(), inputInstruction.getIntermResult());
+                ROB.setStatus(inputInstruction.getRobIndex(), true);
                 break;
 
             case MUL:
@@ -53,16 +59,23 @@ public class EXStage {
 
             case LOAD:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
+
+                LSQ.GetForwardedAddress(inputInstruction.getLsqIndex(), inputInstruction.getIntermResult());
                 break;
 
             case STORE:
                 inputInstruction.setIntermResult(inputInstruction.getsReg2Val() + inputInstruction.getLiteral());
+
+                LSQ.GetForwardedAddress(inputInstruction.getLsqIndex(), inputInstruction.getIntermResult());
                 break;
 
             case MOVC:
                 inputInstruction.setIntermResult(inputInstruction.getLiteral());
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
+
+                ROB.setResult(inputInstruction.getRobIndex(), inputInstruction.getIntermResult());
+                ROB.setStatus(inputInstruction.getRobIndex(), true);
                 break;
 
             case AND:
@@ -74,6 +87,9 @@ public class EXStage {
                 }
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
+
+                ROB.setResult(inputInstruction.getRobIndex(), inputInstruction.getIntermResult());
+                ROB.setStatus(inputInstruction.getRobIndex(), true);
                 break;
 
             case OR:
@@ -85,6 +101,9 @@ public class EXStage {
                 }
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
+
+                ROB.setResult(inputInstruction.getRobIndex(), inputInstruction.getIntermResult());
+                ROB.setStatus(inputInstruction.getRobIndex(), true);
                 break;
 
             case XOR:
@@ -96,6 +115,9 @@ public class EXStage {
                 }
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
+
+                ROB.setResult(inputInstruction.getRobIndex(), inputInstruction.getIntermResult());
+                ROB.setStatus(inputInstruction.getRobIndex(), true);
                 break;
 
             case BZ:
@@ -124,6 +146,8 @@ public class EXStage {
                             inputInstruction.getPC());
                 }
                 PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+
+                ROB.setStatus(inputInstruction.getRobIndex(), true);
                 break;
 
             case BNZ:
@@ -152,12 +176,16 @@ public class EXStage {
                             inputInstruction.getPC());
                 }
                 PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+
+                ROB.setStatus(inputInstruction.getRobIndex(), true);
                 break;
 
             case JUMP:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
                 Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getPC());
                 PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+
+                ROB.setStatus(inputInstruction.getRobIndex(), true);
                 break;
 
             case JAL:
@@ -166,6 +194,9 @@ public class EXStage {
                 PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getPC() + Commons.codeInstructionLength);
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
+
+                ROB.setResult(inputInstruction.getRobIndex(), inputInstruction.getIntermResult());
+                ROB.setStatus(inputInstruction.getRobIndex(), true);
                 break;
 
 

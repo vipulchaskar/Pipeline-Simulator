@@ -40,16 +40,7 @@ public class ROB {
                 ROBEntry head = rob.get(0);
 
                 // Check if the instruction produces a result
-                if (head.getIns().getOpCode() == Commons.I.ADD ||
-                        head.getIns().getOpCode() == Commons.I.SUB ||
-                        head.getIns().getOpCode() == Commons.I.MUL ||
-                        head.getIns().getOpCode() == Commons.I.DIV ||
-                        head.getIns().getOpCode() == Commons.I.AND ||
-                        head.getIns().getOpCode() == Commons.I.OR ||
-                        head.getIns().getOpCode() == Commons.I.XOR ||
-                        head.getIns().getOpCode() == Commons.I.LOAD ||
-                        head.getIns().getOpCode() == Commons.I.MOVC ||
-                        head.getIns().getOpCode() == Commons.I.JAL) {
+                if (Commons.generatesResult(head.getIns())) {
                     // The result is to be committed to architectural registers.
 
                     // Write result to architectural register
@@ -58,8 +49,11 @@ public class ROB {
                             PhysicalRegisterFile.GetZFlag(head.getIns().getdRegAddr()));
 
                     // Set the rename table entry to indicate that result is committed to architectural register
-                    PhysicalRegisterFile.rename_table[head.getDest_arch_register()] = -1;
-                    PhysicalRegisterFile.rename_table_bit[head.getDest_arch_register()] = false;
+                    // Only if the physical register is the most recent instance of architectural register.
+                    if (PhysicalRegisterFile.rename_table[head.getDest_arch_register()] == head.getDest_phy_register()) {
+                        PhysicalRegisterFile.rename_table[head.getDest_arch_register()] = -1;
+                        PhysicalRegisterFile.rename_table_bit[head.getDest_arch_register()] = false;
+                    }
 
                     // Free the physical register
                     PhysicalRegisterFile.SetAllocated(head.getDest_phy_register(), false);

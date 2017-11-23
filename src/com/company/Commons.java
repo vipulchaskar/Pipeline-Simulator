@@ -11,6 +11,7 @@ public class Commons {
     public static final int totalPhysicalRegisters = 32;
     public static final int totalIssueQueueEntries = 16;
     public static final int totalROBEntries = 32;
+    public static final int totalLSQEntries = 32;
 
     public enum I {
         ADD,
@@ -37,4 +38,30 @@ public class Commons {
         MUL,
         INT
     }
+
+    public enum MemType {
+        LOAD,
+        STORE
+    }
+
+    public static boolean generatesResult(InstructionInfo ins) {
+
+        return (ins.getOpCode() == I.ADD ||
+                ins.getOpCode() == I.SUB ||
+                ins.getOpCode() == I.MUL ||
+                ins.getOpCode() == I.DIV ||
+                ins.getOpCode() == I.LOAD ||
+                ins.getOpCode() == I.MOVC ||
+                ins.getOpCode() == I.AND ||
+                ins.getOpCode() == I.OR ||
+                ins.getOpCode() == I.XOR ||
+                ins.getOpCode() == I.JAL);
+    }
+
+    public static boolean isMemoryInstruction(InstructionInfo ins) {
+
+        return (ins.getOpCode() == I.LOAD ||
+                ins.getOpCode() == I.STORE);
+    }
+
 }

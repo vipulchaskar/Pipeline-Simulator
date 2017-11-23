@@ -15,8 +15,7 @@ public class Pipeline {
     private static DIVStage div2s;
     private static DIVStage div3s;
     private static DIVStage div4s;
-    private static MEMStage mems;
-    private static WBStage wbs;
+    private static MEM3Stage mem3s;
 
     public static void Setup() {
         fs = new FStage();
@@ -28,8 +27,7 @@ public class Pipeline {
         div2s = new DIVStage(false, false);
         div3s = new DIVStage(false, false);
         div4s = new DIVStage(false, true);
-        mems = new MEMStage();
-        wbs = new WBStage();
+        mem3s = new MEM3Stage();
         halted = false;
         branch = false;
     }
@@ -56,9 +54,9 @@ public class Pipeline {
 
         for (int i = 1; i <= clockCycles; i++) {
 
-            wbs.execute();
+            ROB.commit();
 
-            mems.execute();
+            mem3s.execute();
 
             div4s.execute();
 
@@ -82,6 +80,7 @@ public class Pipeline {
             System.out.println("Fetch       : " + fs.getCurInstr() + " " + fs.getCurInstrString() + " " + fs.getStalledStr());
             System.out.println("DRF         : " + drfs.getCurInstr() + " " + drfs.getCurInstrString() + " " + drfs.getStalledStr());
             System.out.println("IQ          : " + IssueQueue.printCurrentInstructions());
+            System.out.println("LSQ         : " + LSQ.printCurrentInstructions());
             System.out.println("INTFU       : " + exs.getCurInstr() + " " + exs.getCurInstrString() + " " + exs.getStalledStr());
             System.out.println("MUL1        : " + mul1s.getCurInstr() + " " + mul1s.getCurInstrString() + " " + mul1s.getStalledStr());
             System.out.println("MUL2        : " + mul2s.getCurInstr() + " " + mul2s.getCurInstrString() + " " + mul2s.getStalledStr());
@@ -89,8 +88,8 @@ public class Pipeline {
             System.out.println("DIV2        : " + div2s.getCurInstr() + " " + div2s.getCurInstrString() + " " + div2s.getStalledStr());
             System.out.println("DIV3        : " + div3s.getCurInstr() + " " + div3s.getCurInstrString() + " " + div3s.getStalledStr());
             System.out.println("DIV4        : " + div4s.getCurInstr() + " " + div4s.getCurInstrString() + " " + div4s.getStalledStr());
-            System.out.println("MEM         : " + mems.getCurInstr() + " " + mems.getCurInstrString() + " " + mems.getStalledStr());
-            System.out.println("WB          : " + wbs.getCurInstr() + " " + wbs.getCurInstrString() + " " + wbs.getStalledStr());
+            System.out.println("MEM         : " + mem3s.getCurInstr() + " " + mem3s.getCurInstrString() + " " + mem3s.getStalledStr());
+            System.out.println("ROB         : " + ROB.printCurrentInstructions());
             System.out.println("");
 
             DataForwarding();
@@ -117,53 +116,6 @@ public class Pipeline {
 
             // Logic for sending instructions from one stage to the next
 
-            // WB <-- MEM
-            wbs.inputInstruction = mems.outputInstruction;
-
-            // MEM <-- MUL, EX, DIV
-            // Selection Logic
-            if (div4s.outputInstruction == null) {
-                // No instruction at DIV4, check between MUL2 and INTFU
-
-                if (mul2s.outputInstruction == null && exs.outputInstruction == null) {
-                    // Both MUL2 and INTFU have no instructions
-                    mems.inputInstruction = null;
-
-                } else if (mul2s.outputInstruction != null && exs.outputInstruction == null) {
-                    // There is instruction at MUL2
-                    mul2s.setStalled(false);
-                    mul1s.setStalled(false);
-                    mems.inputInstruction = mul2s.outputInstruction;
-                    mul2s.outputInstruction = null;
-
-                } else if (mul2s.outputInstruction == null && exs.outputInstruction != null) {
-                    // There is instruction at INTFU
-                    exs.setStalled(false);
-                    mems.inputInstruction = exs.outputInstruction;
-                    exs.outputInstruction = null;
-
-                } else {
-                    // Both MUL2 and INTFU have instructions. Give preference to MUL instructions
-                    mul1s.setStalled(false);
-                    mul2s.setStalled(false);
-                    mems.inputInstruction = mul2s.outputInstruction;
-                    mul2s.outputInstruction = null;
-                    exs.setStalled(true);
-                }
-            }
-            else {
-                // There is instruction at DIV4. Give preference to this DIV4 instruction.
-                mems.inputInstruction = div4s.outputInstruction;
-                div4s.outputInstruction = null;
-
-                if (mul2s.outputInstruction != null)
-                    mul2s.setStalled(true);
-                if (mul1s.outputInstruction != null)
-                    mul1s.setStalled(true);
-                if (exs.outputInstruction != null)
-                    exs.setStalled(true);
-            }
-
             // MUL2 <-- MUL1
             if (! mul2s.isStalled()) {
                 // Multiply units are not stalled. Instructions can be given from MUL1 to MUL2.
@@ -176,64 +128,19 @@ public class Pipeline {
             div3s.inputInstruction = div2s.outputInstruction;
             div2s.inputInstruction = div1s.outputInstruction;
 
+            // MEM <-- LSQ
+            if (! mem3s.isStalled()) {
+                mem3s.inputInstruction = LSQ.getNextInstruction();
+            }
+
             // DIV, MUL, EX <-- IQ
             div1s.inputInstruction = IssueQueue.getNextInstruction(Commons.FU.DIV);
             mul1s.inputInstruction = IssueQueue.getNextInstruction(Commons.FU.MUL);
             exs.inputInstruction = IssueQueue.getNextInstruction(Commons.FU.INT);
 
             // IQ <-- DRF
-            // Splitting Logic
             if (drfs.outputInstruction != null)
                 IssueQueue.add(drfs.outputInstruction, i);
-            /*if (drfs.outputInstruction != null) {
-
-                if ((drfs.outputInstruction.getOpCode() == Commons.I.DIV
-                        || drfs.outputInstruction.getOpCode() == Commons.I.HALT)
-                        && div1s.inputInstruction != drfs.outputInstruction) {
-                    // This is a DIV or HALT instruction in DRF stage.
-                    div1s.inputInstruction = drfs.outputInstruction;
-                    if (! mul1s.isStalled())
-                        mul1s.inputInstruction = null;
-                    if (! exs.isStalled())
-                        exs.inputInstruction = null;
-                }
-
-                else if ((drfs.outputInstruction.getOpCode() == Commons.I.MUL)
-                        && mul1s.inputInstruction != drfs.outputInstruction) {
-                    // This is a MUL instruction in DRF stage.
-                    if ( ! mul1s.isStalled()) {
-                        drfs.setMulStalled(false);
-                        mul1s.inputInstruction = drfs.outputInstruction;
-                    }
-                    else {
-                        drfs.setMulStalled(true);
-                    }
-                    if (! exs.isStalled())
-                        exs.inputInstruction = null;
-                    div1s.inputInstruction = null;
-                }
-
-                else if (exs.inputInstruction != drfs.outputInstruction) {
-                    // All other instructions
-                    if ( ! exs.isStalled()) {
-                        drfs.setExStalled(false);
-                        exs.inputInstruction = drfs.outputInstruction;
-                    }
-                    else
-                        drfs.setExStalled(true);
-                    if (! mul1s.isStalled())
-                        mul1s.inputInstruction = null;
-                    div1s.inputInstruction = null;
-                }
-            }
-            else {
-                // No instruction at output of DRF
-                div1s.inputInstruction = null;
-                if (! mul1s.isStalled())
-                    mul1s.inputInstruction = null;
-                if (! exs.isStalled())
-                    exs.inputInstruction = null;
-            }*/
 
             // DRF <-- F
             if (drfs.isExStalled())
@@ -255,6 +162,40 @@ public class Pipeline {
         PhysicalRegisterFile.printAll();
     }
 
+    private static void ForwardToIQandLSQ(InstructionInfo outputInstruction) {
+
+        int destReg = outputInstruction.getdRegAddr();
+        int data = outputInstruction.getIntermResult();
+        if (destReg != -1) {
+            IssueQueue.GetForwardedData(destReg, data);
+            LSQ.GetForwardedData(destReg, data);
+        }
+    }
+
+    private static void ForwardToDRF(InstructionInfo outputInstruction, int drfSrc1, int drfSrc2) {
+
+        // Forward the registers
+        int destReg = outputInstruction.getdRegAddr();
+        if (destReg != -1) {
+            if (destReg == drfSrc1) {
+                drfs.inputInstruction.setsReg1Val(outputInstruction.getIntermResult());
+                drfs.inputInstruction.setSrc1Forwarded(true);
+            }
+
+            if (destReg == drfSrc2) {
+                drfs.inputInstruction.setsReg2Val(outputInstruction.getIntermResult());
+                drfs.inputInstruction.setSrc2Forwarded(true);
+            }
+        }
+
+        // Forward the flags
+        /*if (exs.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
+            zeroFlag = (exs.outputInstruction.getIntermResult() == 0);
+            drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
+            drfs.inputInstruction.setFlagsForwarded(true);
+        }*/
+    }
+
     public static void DataForwarding() {
         int src1;
         int src2;
@@ -263,113 +204,48 @@ public class Pipeline {
         if (branch)
             return;
 
-        // Forwarding to IQ
+        // Forwarding to IQ, LSQ
 
-        // Forwarding from EX to IQ
-        if (exs.outputInstruction != null && exs.outputInstruction.getOpCode() != Commons.I.LOAD) {
-            int exd = exs.outputInstruction.getdRegAddr();
-            int data = exs.outputInstruction.getIntermResult();
-            if (exd != -1) {
-                IssueQueue.GetForwardedData(exd, data);
-            }
-        }
-        // Forwarding from MUL2 to IQ
-        if (mul2s.outputInstruction != null) {
-            int mul2d = mul2s.outputInstruction.getdRegAddr();
-            int data = mul2s.outputInstruction.getIntermResult();
-            if (mul2d != -1) {
-                IssueQueue.GetForwardedData(mul2d, data);
-            }
-        }
-        // Forwarding from DIV4 to IQ
-        if (div4s.outputInstruction != null && div4s.outputInstruction.getOpCode() != Commons.I.LOAD) {
-            int div4d = div4s.outputInstruction.getdRegAddr();
-            int data = div4s.outputInstruction.getIntermResult();
-            if (div4d != -1) {
-                IssueQueue.GetForwardedData(div4d, data);
-            }
-        }
+        // Forwarding from EX to IQ, LSQ
+        if (exs.outputInstruction != null && exs.outputInstruction.getOpCode() != Commons.I.LOAD)
+            ForwardToIQandLSQ(exs.outputInstruction);
+
+        // Forwarding from MUL2 to IQ, LSQ
+        if (mul2s.outputInstruction != null)
+            ForwardToIQandLSQ(mul2s.outputInstruction);
+
+        // Forwarding from DIV4 to IQ, LSQ
+        if (div4s.outputInstruction != null && div4s.outputInstruction.getOpCode() != Commons.I.LOAD)
+            ForwardToIQandLSQ(div4s.outputInstruction);
+
+        // Forwarding from MEM to IQ, LSQ
+        if (mem3s.outputInstruction != null && mem3s.outputInstruction.getOpCode() == Commons.I.LOAD)
+            ForwardToIQandLSQ(mem3s.outputInstruction);
+
 
         // Forwarding to instruction in DRF
 
-
-        // Do forwarding only if the instruction in DRF has not fetched all registers
-        if (drfs.inputInstruction != null && (! drfs.inputInstruction.isRegistersFetched())) {
+        // Do forwarding only if the instruction in DRF is not stalled
+        if (drfs.inputInstruction != null && (! drfs.isStalled())) {
 
             src1 = drfs.inputInstruction.getsReg1Addr();
             src2 = drfs.inputInstruction.getsReg2Addr();
 
             // Forwarding from EX to DRF
-            if (exs.outputInstruction != null && exs.outputInstruction.getOpCode() != Commons.I.LOAD) {
-                // Forward the registers
-                int exd = exs.outputInstruction.getdRegAddr();
-                if (exd != -1) {
-                    if (exd == src1) {
-                        drfs.inputInstruction.setsReg1Val(exs.outputInstruction.getIntermResult());
-                        drfs.inputInstruction.setSrc1Forwarded(true);
-                    }
-
-                    if (exd == src2) {
-                        drfs.inputInstruction.setsReg2Val(exs.outputInstruction.getIntermResult());
-                        drfs.inputInstruction.setSrc2Forwarded(true);
-                    }
-                }
-
-                // Forward the flags
-                if (exs.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
-                    zeroFlag = (exs.outputInstruction.getIntermResult() == 0);
-                    drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
-                    drfs.inputInstruction.setFlagsForwarded(true);
-                }
-            }
+            if (exs.outputInstruction != null && exs.outputInstruction.getOpCode() != Commons.I.LOAD)
+                ForwardToDRF(exs.outputInstruction, src1, src2);
 
             // Forwarding from MUL2 to DRF
-            if (mul2s.outputInstruction != null) {
-                // Forward the registers
-                int mul2d = mul2s.outputInstruction.getdRegAddr();
-                if (mul2d != -1) {
-                    if (mul2d == src1) {
-                        drfs.inputInstruction.setsReg1Val(mul2s.outputInstruction.getIntermResult());
-                        drfs.inputInstruction.setSrc1Forwarded(true);
-                    }
-
-                    if (mul2d == src2) {
-                        drfs.inputInstruction.setsReg2Val(mul2s.outputInstruction.getIntermResult());
-                        drfs.inputInstruction.setSrc2Forwarded(true);
-                    }
-                }
-
-                // Forward the flags
-                if (mul2s.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
-                    zeroFlag = (mul2s.outputInstruction.getIntermResult() == 0);
-                    drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
-                    drfs.inputInstruction.setFlagsForwarded(true);
-                }
-            }
+            if (mul2s.outputInstruction != null)
+                ForwardToDRF(mul2s.outputInstruction, src1, src2);
 
             // Forwarding from DIV4 to DRF
-            if (div4s.outputInstruction != null) {
-                // Forward the registers
-                int div4d = div4s.outputInstruction.getdRegAddr();
-                if (div4d != -1) {
-                    if (div4d == src1) {
-                        drfs.inputInstruction.setsReg1Val(div4s.outputInstruction.getIntermResult());
-                        drfs.inputInstruction.setSrc1Forwarded(true);
-                    }
+            if (div4s.outputInstruction != null)
+                ForwardToDRF(div4s.outputInstruction, src1, src2);
 
-                    if (div4d == src2) {
-                        drfs.inputInstruction.setsReg2Val(div4s.outputInstruction.getIntermResult());
-                        drfs.inputInstruction.setSrc2Forwarded(true);
-                    }
-                }
-
-                // Forward the flags
-                if (div4s.outputInstruction.getIsGonnaSetFlags() && drfs.inputInstruction.isFlagConsumer()) {
-                    zeroFlag = (div4s.outputInstruction.getIntermResult() == 0);
-                    drfs.inputInstruction.setForwardedZeroFlag(zeroFlag);
-                    drfs.inputInstruction.setFlagsForwarded(true);
-                }
-            }
+            // Forwarding from MEM to DRF
+            if (mem3s.outputInstruction != null && mem3s.outputInstruction.getOpCode() == Commons.I.LOAD)
+                ForwardToDRF(mem3s.outputInstruction, src1, src2);
 
             // Trigger the stalling logic to see if instruction can be moved ahead after forwarding
             // drfs.StallingLogic();
@@ -406,35 +282,6 @@ public class Pipeline {
         // TODO: Also flush from ROB once it has been implemented? What about LSQ?
     }
 
-    public static void RemoveFlagSettingCapability() {
-        if (exs.inputInstruction != null)
-            exs.inputInstruction.setIsGonnaSetFlags(false);
-
-        if (mul1s.inputInstruction != null)
-            mul1s.inputInstruction.setIsGonnaSetFlags(false);
-
-        if (mul2s.inputInstruction != null)
-            mul2s.inputInstruction.setIsGonnaSetFlags(false);
-
-        if (div1s.inputInstruction != null)
-            div1s.inputInstruction.setIsGonnaSetFlags(false);
-
-        if (div2s.inputInstruction != null)
-            div2s.inputInstruction.setIsGonnaSetFlags(false);
-
-        if (div3s.inputInstruction != null)
-            div3s.inputInstruction.setIsGonnaSetFlags(false);
-
-        if (div4s.inputInstruction != null)
-            div4s.inputInstruction.setIsGonnaSetFlags(false);
-
-        if (mems.inputInstruction != null)
-            mems.inputInstruction.setIsGonnaSetFlags(false);
-
-        if (wbs.inputInstruction != null)
-            wbs.inputInstruction.setIsGonnaSetFlags(false);
-
-    }
 
     public static void Display() {
         System.out.println("\nContents of Pipeline stages:");
@@ -447,8 +294,7 @@ public class Pipeline {
         System.out.println("DIV2 stage : " + div2s.getCurInstr() + " | " + div2s.getCurInstrString());
         System.out.println("DIV3 stage : " + div3s.getCurInstr() + " | " + div3s.getCurInstrString());
         System.out.println("DIV4 stage : " + div4s.getCurInstr() + " | " + div4s.getCurInstrString());
-        System.out.println("MEM stage : " + mems.getCurInstr() + " | " + mems.getCurInstrString());
-        System.out.println("WB stage : " + wbs.getCurInstr() + " | " + wbs.getCurInstrString());
+        System.out.println("MEM stage : " + mem3s.getCurInstr() + " | " + mem3s.getCurInstrString());
 
         System.out.println("----------------------------------");
 

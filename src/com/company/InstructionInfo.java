@@ -15,6 +15,7 @@ public class InstructionInfo {
     private int memAddr, memData;
     private int literal;
     private int lsqIndex;
+    private int robIndex;
     private boolean decoded; // TODO: I don't know if this will be required. just keeping it for now.
     private boolean isGonnaSetFlags;
     private boolean flagConsumer;
@@ -42,6 +43,7 @@ public class InstructionInfo {
         literal = -1;  // TODO: I know this is wrong. But keeping for now.
         intermResult = -1;  // TODO: I know this is wrong. But keeping for now.
         lsqIndex = -1;
+        robIndex = -1;
         src1Forwarded = false;
         src2Forwarded = false;
         flagsForwarded = false;
@@ -85,7 +87,7 @@ public class InstructionInfo {
     }
 
     public void setsReg1Val(int sReg1Val) {
-        if (! isSrc1Forwarded())
+        if (!isSrc1Forwarded())
             this.sReg1Val = sReg1Val;
     }
 
@@ -102,7 +104,7 @@ public class InstructionInfo {
     }
 
     public void setsReg2Val(int sReg2Val) {
-        if (! isSrc2Forwarded())
+        if (!isSrc2Forwarded())
             this.sReg2Val = sReg2Val;
     }
 
@@ -234,4 +236,11 @@ public class InstructionInfo {
         this.lsqIndex = lsqIndex;
     }
 
+    public int getRobIndex() {
+        return robIndex;
+    }
+
+    public void setRobIndex(int robIndex) {
+        this.robIndex = robIndex;
+    }
 }

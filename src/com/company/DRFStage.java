@@ -98,7 +98,7 @@ public class DRFStage {
                     // This is an arithmetic instruction. Evaporate the capability of instructions already in pipeline
                     // to set the flags.
                     // Thou shalt set no more flags :D
-                    Pipeline.RemoveFlagSettingCapability();
+                    // Pipeline.RemoveFlagSettingCapability();
                     inputInstruction.setIsGonnaSetFlags(true);
                     inputInstruction.setDecoded(true);
                     break;
@@ -178,27 +178,22 @@ public class DRFStage {
     public void StallingLogic() {
         if (! inputInstruction.isRegistersFetched() && inputInstruction != null) {
             // Stalling logic
-            boolean freePhyRegAvailable = PhysicalRegisterFile.FreePhysicalRegisterAvailable();
+
+            // Either the instruction does not require a physical register, or if it does, a physical register is available.
+            boolean freePhyRegAvailable = (! Commons.generatesResult(inputInstruction) ||
+                    PhysicalRegisterFile.FreePhysicalRegisterAvailable());
+
+            // Issue Queue is not full, there is space.
             boolean freeIQEntryAvailable = ! IssueQueue.isIQFull();
 
-            /*// Interlocking logic
-            boolean DRegFree = (inputInstruction.getdRegAddr() == -1
-                    || RegisterFile.GetRegisterStatus(inputInstruction.getdRegAddr()));
+            // Free ROB slot available.
+            boolean freeROBSlotAvailable = ! ROB.isROBFull();
 
-            boolean SReg1Free = (inputInstruction.getsReg1Addr() == -1
-                    || RegisterFile.GetRegisterStatus(inputInstruction.getsReg1Addr())
-                    || inputInstruction.isSrc1Forwarded());
+            // Either the instruction is not a memory instruction, or if it is, a slot in LSQ is available.
+            boolean freeLSQSlotAvailable = (!Commons.isMemoryInstruction(inputInstruction) || !LSQ.isLSQFull());
 
-            boolean SReg2Free = (inputInstruction.getsReg2Addr() == -1
-                    || RegisterFile.GetRegisterStatus(inputInstruction.getsReg2Addr())
-                    || inputInstruction.isSrc2Forwarded());
 
-            boolean FlagsAvailable = (!inputInstruction.isFlagConsumer()
-                    || !Flags.getBusy()
-                    || inputInstruction.isFlagsForwarded());*/
-
-            if (freePhyRegAvailable && freeIQEntryAvailable) {
-            //if (DRegFree && SReg1Free && SReg2Free && FlagsAvailable) {
+            if (freePhyRegAvailable && freeIQEntryAvailable && freeROBSlotAvailable && freeLSQSlotAvailable) {
 
                 // Stalling logic satisfied.
                 stalled = false;
@@ -222,6 +217,7 @@ public class DRFStage {
                         // Step b.
                         // Assign the physical register for destination and update the rename table
                         int newPhyRegAddr = PhysicalRegisterFile.GetNewPhysicalRegister();
+                        int destArchRegAddr = inputInstruction.getdRegAddr();
                         PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
                         PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
 
@@ -267,6 +263,10 @@ public class DRFStage {
                         inputInstruction.setdRegAddr(newPhyRegAddr);
 
                         // Step h. Taken care of by IssueQueue.add() method.
+
+                        // Create an ROB entry.
+                        int robIndex = ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr);
+                        inputInstruction.setRobIndex(robIndex);
 
                         // Arithmetic instruction. Must also make a rename table entry for flags.
                         // Latest value of flags will be found in a physical register (true)
@@ -289,6 +289,7 @@ public class DRFStage {
                         // Step b.
                         // Assign the physical register for destination and update the rename table
                         newPhyRegAddr = PhysicalRegisterFile.GetNewPhysicalRegister();
+                        destArchRegAddr = inputInstruction.getdRegAddr();
                         PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
                         PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
 
@@ -335,6 +336,10 @@ public class DRFStage {
 
                         // Step h. Taken care of by IssueQueue.add() method.
 
+                        // Create an ROB entry.
+                        robIndex = ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr);
+                        inputInstruction.setRobIndex(robIndex);
+
                         break;
 
                     case LOAD:
@@ -345,6 +350,7 @@ public class DRFStage {
                         // Step b.
                         // Assign the physical register for destination and update the rename table
                         newPhyRegAddr = PhysicalRegisterFile.GetNewPhysicalRegister();
+                        destArchRegAddr = inputInstruction.getdRegAddr();
                         PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
                         PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
 
@@ -373,6 +379,14 @@ public class DRFStage {
                         inputInstruction.setdRegAddr(newPhyRegAddr);
 
                         // Step h. Taken care of by IssueQueue.add() method.
+
+                        // Create an ROB entry.
+                        robIndex = ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr);
+                        inputInstruction.setRobIndex(robIndex);
+
+                        // Create an LSQ index.
+                        int lsqIndex = LSQ.add(inputInstruction, robIndex);
+                        inputInstruction.setLsqIndex(lsqIndex);
                         break;
 
                     case STORE:
@@ -422,8 +436,15 @@ public class DRFStage {
 
                         // Step h. Taken care of by IssueQueue.add() method.
 
-                        inputInstruction.setsReg1Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg1Addr()));
-                        inputInstruction.setsReg2Val(RegisterFile.ReadFromRegister(inputInstruction.getsReg2Addr()));
+                        // Create an ROB entry.
+                        // STORE instructions don't have destination registers, so it doesn't matter what we enter as
+                        // destination arch and physical registers.
+                        robIndex = ROB.add(inputInstruction, -1, -1);
+                        inputInstruction.setRobIndex(robIndex);
+
+                        // Create an LSQ index.
+                        lsqIndex = LSQ.add(inputInstruction, robIndex);
+                        inputInstruction.setLsqIndex(lsqIndex);
                         break;
 
                     case MOVC:
@@ -431,6 +452,7 @@ public class DRFStage {
                         // Look up physical register address for source registers - N.A.
                         // Assign the physical register for destination and update the rename table
                         newPhyRegAddr = PhysicalRegisterFile.GetNewPhysicalRegister();
+                        destArchRegAddr = inputInstruction.getdRegAddr();
                         PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
                         PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
 
@@ -448,6 +470,10 @@ public class DRFStage {
                         inputInstruction.setdRegAddr(newPhyRegAddr);
 
                         // Step h. Taken care of by IssueQueue.add() method.
+
+                        // Create an ROB entry.
+                        robIndex = ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr);
+                        inputInstruction.setRobIndex(robIndex);
                         break;
 
                     case BZ:
@@ -455,12 +481,20 @@ public class DRFStage {
                         inputInstruction.setSrc1Forwarded(true);
                         inputInstruction.setSrc2Forwarded(true);
                         PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
+
+                        // Create an ROB entry.
+                        robIndex = ROB.add(inputInstruction, -1, -1);
+                        inputInstruction.setRobIndex(robIndex);
                         break;
 
                     case HALT:
                     case NOOP:
                         inputInstruction.setSrc1Forwarded(true);
                         inputInstruction.setSrc2Forwarded(true);
+
+                        // Create an ROB entry.
+                        robIndex = ROB.add(inputInstruction, -1, -1);
+                        inputInstruction.setRobIndex(robIndex);
                         break;
 
                     case JUMP:
@@ -498,6 +532,10 @@ public class DRFStage {
 
                         // Take backup of the physical registers and rename table for branch instructions
                         PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
+
+                        // Create an ROB entry.
+                        robIndex = ROB.add(inputInstruction, -1, -1);
+                        inputInstruction.setRobIndex(robIndex);
                         break;
 
                     case JAL:
@@ -508,6 +546,7 @@ public class DRFStage {
                         // Step b.
                         // Assign the physical register for destination and update the rename table
                         newPhyRegAddr = PhysicalRegisterFile.GetNewPhysicalRegister();
+                        destArchRegAddr = inputInstruction.getdRegAddr();
                         PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
                         PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
 
@@ -539,6 +578,10 @@ public class DRFStage {
 
                         // Take backup of the physical registers and rename table for branch instructions
                         PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
+
+                        // Create an ROB entry.
+                        robIndex = ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr);
+                        inputInstruction.setRobIndex(robIndex);
                         break;
 
                     default:
