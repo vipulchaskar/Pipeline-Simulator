@@ -39,8 +39,8 @@ public class MUL2Stage {
                 PhysicalRegisterFile.SetZFlag(inputInstruction.getdRegAddr(), (inputInstruction.getIntermResult() == 0));
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
 
-                ROB.setResult(inputInstruction.getRobIndex(), inputInstruction.getIntermResult());
-                ROB.setStatus(inputInstruction.getRobIndex(), true);
+                ROB.setResult(inputInstruction.getDispatchedClockCycle(), inputInstruction.getIntermResult());
+                ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
                 break;
 
             default:

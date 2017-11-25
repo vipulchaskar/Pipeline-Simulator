@@ -19,7 +19,7 @@ public class Pipeline {
 
     public static void Setup() {
         fs = new FStage();
-        drfs = new DRFStage(fs);
+        drfs = new DRFStage();
         exs = new EXStage();
         mul1s = new MUL1Stage();
         mul2s = new MUL2Stage();
@@ -72,7 +72,7 @@ public class Pipeline {
 
             exs.execute();
 
-            drfs.execute();
+            drfs.execute(i);
 
             fs.execute();
 
@@ -143,20 +143,11 @@ public class Pipeline {
                 IssueQueue.add(drfs.outputInstruction, i);
 
             // DRF <-- F
-            if (drfs.isExStalled())
-                fs.setExStalled(true);
-            else
-                fs.setExStalled(false);
-
-            if (drfs.isMulStalled())
-                fs.setMulStalled(true);
-            else
-                fs.setMulStalled(false);
-
-            if (! fs.isStalled() && ! fs.isExStalled() && ! fs.isMulStalled()) {
+            if (! fs.isStalled()) {
                 drfs.inputInstruction = fs.outputInstruction;
                 fs.outputInstruction = null;
             }
+
         }
 
         PhysicalRegisterFile.printAll();
@@ -199,7 +190,6 @@ public class Pipeline {
     public static void DataForwarding() {
         int src1;
         int src2;
-        boolean zeroFlag;
 
         if (branch)
             return;

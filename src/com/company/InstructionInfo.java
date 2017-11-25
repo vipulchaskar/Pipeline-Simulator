@@ -14,8 +14,9 @@ public class InstructionInfo {
     private int intermResult;
     private int memAddr, memData;
     private int literal;
-    private int lsqIndex;
-    private int robIndex;
+    //private int lsqIndex;
+    //private int robIndex;
+    private int dispatchedClockCycle;
     private boolean decoded; // TODO: I don't know if this will be required. just keeping it for now.
     private boolean isGonnaSetFlags;
     private boolean flagConsumer;
@@ -42,8 +43,8 @@ public class InstructionInfo {
         memAddr = -1;
         literal = -1;  // TODO: I know this is wrong. But keeping for now.
         intermResult = -1;  // TODO: I know this is wrong. But keeping for now.
-        lsqIndex = -1;
-        robIndex = -1;
+        //lsqIndex = -1;
+        //robIndex = -1;
         src1Forwarded = false;
         src2Forwarded = false;
         flagsForwarded = false;
@@ -228,19 +229,27 @@ public class InstructionInfo {
         this.forwardedZeroFlag = forwardedZeroFlag;
     }
 
-    public int getLsqIndex() {
-        return lsqIndex;
+    //public int getLsqIndex() {
+    //    return lsqIndex;
+    //}
+
+    //public void setLsqIndex(int lsqIndex) {
+    //    this.lsqIndex = lsqIndex;
+    //}
+
+    //public int getRobIndex() {
+    //    return robIndex;
+    //}
+
+    //public void setRobIndex(int robIndex) {
+    //    this.robIndex = robIndex;
+    //}
+
+    public int getDispatchedClockCycle() {
+        return dispatchedClockCycle;
     }
 
-    public void setLsqIndex(int lsqIndex) {
-        this.lsqIndex = lsqIndex;
-    }
-
-    public int getRobIndex() {
-        return robIndex;
-    }
-
-    public void setRobIndex(int robIndex) {
-        this.robIndex = robIndex;
+    public void setDispatchedClockCycle(int dispatchedClockCycle) {
+        this.dispatchedClockCycle = dispatchedClockCycle;
     }
 }

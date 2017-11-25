@@ -9,8 +9,6 @@ public class LSQEntry {
     private int address;
     private boolean addressReady;
 
-    private int robIndex;
-
     // Load specific fields
     private int destPhyRegAddr;
 
@@ -19,7 +17,9 @@ public class LSQEntry {
     private int srcPhyRegAddr;
     private int value;
 
-    LSQEntry(InstructionInfo newIns, int newRobIndex) {
+    private int clockCycle;
+
+    LSQEntry(InstructionInfo newIns, int newClockCycle) {
 
         ins = newIns;
 
@@ -44,7 +44,8 @@ public class LSQEntry {
         address = -1;
         addressReady = false;
 
-        robIndex = newRobIndex;
+        clockCycle = newClockCycle;
+
     }
 
     public InstructionInfo getIns() {
@@ -79,14 +80,6 @@ public class LSQEntry {
         this.addressReady = addressReady;
     }
 
-    public int getRobIndex() {
-        return robIndex;
-    }
-
-    public void setRobIndex(int robIndex) {
-        this.robIndex = robIndex;
-    }
-
     public int getDestPhyRegAddr() {
         return destPhyRegAddr;
     }
@@ -118,4 +111,13 @@ public class LSQEntry {
     public void setValue(int value) {
         this.value = value;
     }
+
+    public int getClockCycle() {
+        return clockCycle;
+    }
+
+    public void setClockCycle(int clockCycle) {
+        this.clockCycle = clockCycle;
+    }
+
 }

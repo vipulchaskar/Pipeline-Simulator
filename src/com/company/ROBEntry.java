@@ -7,13 +7,13 @@ public class ROBEntry {
     private int dest_arch_register;
     private int dest_phy_register;
     private int result;
-    private int excodes;
+    private int clockCycle;
 
     ROBEntry() {
         status = false;
         dest_phy_register = -1;
         dest_arch_register = -1;
-        excodes = 0;
+        clockCycle = 0;
     }
     public InstructionInfo getIns() {
         return ins;
@@ -55,12 +55,12 @@ public class ROBEntry {
         this.result = result;
     }
 
-    public int getExcodes() {
-        return excodes;
+    public int getClockCycle() {
+        return clockCycle;
     }
 
-    public void setExcodes(int excodes) {
-        this.excodes = excodes;
+    public void setClockCycle(int clockCycle) {
+        this.clockCycle = clockCycle;
     }
 
 }

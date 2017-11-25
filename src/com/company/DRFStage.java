@@ -6,21 +6,19 @@ public class DRFStage {
 
     public InstructionInfo inputInstruction;
     public InstructionInfo outputInstruction;
-    private FStage fs;
 
     public boolean stalled;
     public boolean exStalled;
     public boolean mulStalled;
 
-    public DRFStage(FStage fsref) {
+    public DRFStage() {
         stalled = false;
         exStalled = false;
         mulStalled = false;
-        fs = fsref;
     }
 
 
-    public void execute() {
+    public void execute(int clockCycle) {
         if (inputInstruction == null || Pipeline.IsBranching() || Pipeline.isHalted()) {
             inputInstruction = null;
             outputInstruction = null;
@@ -171,11 +169,11 @@ public class DRFStage {
             }
         }
 
-        StallingLogic();
+        StallingLogic(clockCycle);
 
     }
 
-    public void StallingLogic() {
+    public void StallingLogic(int clockCycle) {
         if (! inputInstruction.isRegistersFetched() && inputInstruction != null) {
             // Stalling logic
 
@@ -265,14 +263,15 @@ public class DRFStage {
                         // Step h. Taken care of by IssueQueue.add() method.
 
                         // Create an ROB entry.
-                        int robIndex = ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr);
-                        inputInstruction.setRobIndex(robIndex);
+                        ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
 
                         // Arithmetic instruction. Must also make a rename table entry for flags.
                         // Latest value of flags will be found in a physical register (true)
                         PhysicalRegisterFile.psw_rename_table_bit = true;
                         // This is where latest value of flags will be found in case of physical register.
                         PhysicalRegisterFile.psw_rename_table = newPhyRegAddr;
+
+                        inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
 
                     case AND:
@@ -337,9 +336,9 @@ public class DRFStage {
                         // Step h. Taken care of by IssueQueue.add() method.
 
                         // Create an ROB entry.
-                        robIndex = ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr);
-                        inputInstruction.setRobIndex(robIndex);
+                        ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
 
+                        inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
 
                     case LOAD:
@@ -381,12 +380,12 @@ public class DRFStage {
                         // Step h. Taken care of by IssueQueue.add() method.
 
                         // Create an ROB entry.
-                        robIndex = ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr);
-                        inputInstruction.setRobIndex(robIndex);
+                        ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
 
-                        // Create an LSQ index.
-                        int lsqIndex = LSQ.add(inputInstruction, robIndex);
-                        inputInstruction.setLsqIndex(lsqIndex);
+                        // Create an LSQ entry.
+                        LSQ.add(inputInstruction, clockCycle);
+
+                        inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
 
                     case STORE:
@@ -439,12 +438,12 @@ public class DRFStage {
                         // Create an ROB entry.
                         // STORE instructions don't have destination registers, so it doesn't matter what we enter as
                         // destination arch and physical registers.
-                        robIndex = ROB.add(inputInstruction, -1, -1);
-                        inputInstruction.setRobIndex(robIndex);
+                        ROB.add(inputInstruction, -1, -1, clockCycle);
 
-                        // Create an LSQ index.
-                        lsqIndex = LSQ.add(inputInstruction, robIndex);
-                        inputInstruction.setLsqIndex(lsqIndex);
+                        // Create an LSQ entry.
+                        LSQ.add(inputInstruction, clockCycle);
+
+                        inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
 
                     case MOVC:
@@ -472,8 +471,9 @@ public class DRFStage {
                         // Step h. Taken care of by IssueQueue.add() method.
 
                         // Create an ROB entry.
-                        robIndex = ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr);
-                        inputInstruction.setRobIndex(robIndex);
+                        ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
+
+                        inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
 
                     case BZ:
@@ -483,8 +483,9 @@ public class DRFStage {
                         PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
 
                         // Create an ROB entry.
-                        robIndex = ROB.add(inputInstruction, -1, -1);
-                        inputInstruction.setRobIndex(robIndex);
+                        ROB.add(inputInstruction, -1, -1, clockCycle);
+
+                        inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
 
                     case HALT:
@@ -493,8 +494,9 @@ public class DRFStage {
                         inputInstruction.setSrc2Forwarded(true);
 
                         // Create an ROB entry.
-                        robIndex = ROB.add(inputInstruction, -1, -1);
-                        inputInstruction.setRobIndex(robIndex);
+                        ROB.add(inputInstruction, -1, -1, clockCycle);
+
+                        inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
 
                     case JUMP:
@@ -534,8 +536,9 @@ public class DRFStage {
                         PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
 
                         // Create an ROB entry.
-                        robIndex = ROB.add(inputInstruction, -1, -1);
-                        inputInstruction.setRobIndex(robIndex);
+                        ROB.add(inputInstruction, -1, -1, clockCycle);
+
+                        inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
 
                     case JAL:
@@ -580,8 +583,9 @@ public class DRFStage {
                         PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
 
                         // Create an ROB entry.
-                        robIndex = ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr);
-                        inputInstruction.setRobIndex(robIndex);
+                        ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
+
+                        inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
 
                     default:

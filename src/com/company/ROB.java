@@ -14,7 +14,7 @@ public class ROB {
             return (rob.size() >= Commons.totalROBEntries);
         }
 
-        public static int add(InstructionInfo newInstrn, int dest_arch_register, int dest_phy_register) {
+        public static int add(InstructionInfo newInstrn, int dest_arch_register, int dest_phy_register, int clockCycle) {
 
             ROBEntry newROBEntry = new ROBEntry();
             newROBEntry.setDest_arch_register(dest_arch_register);
@@ -22,6 +22,8 @@ public class ROB {
 
             // Set the actual instruction to one that was passed
             newROBEntry.setIns(newInstrn);
+
+            newROBEntry.setClockCycle(clockCycle);
 
             rob.add(newROBEntry);
 
@@ -65,28 +67,40 @@ public class ROB {
             }
         }
 
-        public static void setStatus(int index, boolean status) {
-            rob.get(index).setStatus(status);
+        private static int GetInstructionIndexByClockCycle(int clockCycle) {
+
+            for (int i = 0; i < rob.size(); i++) {
+                if (rob.get(i).getClockCycle() == clockCycle)
+                    return i;
+            }
+
+            System.out.println("Error! No instruction in ROB for the given clock cycle " + String.valueOf(clockCycle) + " found!");
+            return -1;
+
         }
 
-        public static boolean getStatus(int index) {
-            return rob.get(index).isStatus();
+        public static void setStatus(int clockCycle, boolean status) {
+            rob.get(GetInstructionIndexByClockCycle(clockCycle)).setStatus(status);
         }
 
-        public static void setResult(int index, int result) {
-            rob.get(index).setResult(result);
+        public static boolean getStatus(int clockCycle) {
+            return rob.get(GetInstructionIndexByClockCycle(clockCycle)).isStatus();
         }
 
-        public static int getResult(int index) {
-            return rob.get(index).getResult();
+        public static void setResult(int clockCycle, int result) {
+            rob.get(GetInstructionIndexByClockCycle(clockCycle)).setResult(result);
         }
 
-        public static void setExcodes(int index, int excodes) {
-            rob.get(index).setExcodes(excodes);
+        public static int getResult(int clockCycle) {
+            return rob.get(GetInstructionIndexByClockCycle(clockCycle)).getResult();
         }
 
-        public static int getExcode(int index) {
-            return rob.get(index).getExcodes();
+        public static void setClockCycle(int index, int newClockCycle) {
+            rob.get(index).setClockCycle(newClockCycle);
+        }
+
+        public static int getClockCycle(int index) {
+            return rob.get(index).getClockCycle();
         }
 
         public static String printCurrentInstructions() {

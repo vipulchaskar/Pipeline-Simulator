@@ -14,9 +14,9 @@ public class LSQ {
         return (lsq.size() >= Commons.totalLSQEntries);
     }
 
-    public static int add(InstructionInfo newInstrn, int newROBIndex) {
+    public static int add(InstructionInfo newInstrn, int clockCycle) {
 
-        LSQEntry newLSQEntry = new LSQEntry(newInstrn, newROBIndex);
+        LSQEntry newLSQEntry = new LSQEntry(newInstrn, clockCycle);
 
         lsq.add(newLSQEntry);
 
@@ -71,7 +71,20 @@ public class LSQ {
         }
     }
 
-    public static void GetForwardedAddress(int lsqIndex, int address) {
+    private static int GetIndexByClockCycle(int clockCycle) {
+
+        for (int i = 0; i < lsq.size(); i++) {
+            if (lsq.get(i).getClockCycle() == clockCycle)
+                return i;
+        }
+
+        System.out.println("Error! No instruction in LSQ for the given clock cycle " + String.valueOf(clockCycle) + " found!");
+        return -1;
+    }
+
+    public static void GetForwardedAddress(int clockCycle, int address) {
+
+        int lsqIndex = GetIndexByClockCycle(clockCycle);
 
         lsq.get(lsqIndex).setAddress(address);
         lsq.get(lsqIndex).setAddressReady(true);
@@ -84,12 +97,15 @@ public class LSQ {
             boolean canBypass = true;
             boolean storesFound = false;
 
+            // For all instructions ahead of LOAD,
             for (int i = lsqIndex-1; i >= 0; i--) {
 
+                // If that instruction is STORE,
                 if ((lsq.get(i).getMemType() == Commons.MemType.STORE)) {
 
                     storesFound = true;
 
+                    // Do not bypass if the STORE doesn't have address ready or the addresses are matching.
                     if (!lsq.get(i).isAddressReady() || lsq.get(i).getAddress() == bypasserLoad.getAddress()) {
 
                         canBypass = false;

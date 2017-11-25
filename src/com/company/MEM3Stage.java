@@ -43,14 +43,14 @@ public class MEM3Stage {
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getIntermResult());
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
 
-                ROB.setResult(inputInstruction.getRobIndex(), inputInstruction.getIntermResult());
-                ROB.setStatus(inputInstruction.getRobIndex(), true);
+                ROB.setResult(inputInstruction.getDispatchedClockCycle(), inputInstruction.getIntermResult());
+                ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
                 break;
 
             case STORE:
                 DataMemory.writeToMemory(inputInstruction.getsReg1Val(), inputInstruction.getIntermResult());
 
-                ROB.setStatus(inputInstruction.getRobIndex(), true);
+                ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
                 break;
 
             case ADD:

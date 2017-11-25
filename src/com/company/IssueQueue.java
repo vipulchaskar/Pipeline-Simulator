@@ -34,6 +34,7 @@ public class IssueQueue {
         // Record the clock Cycle when this instruction was dispatched.
         newIQEntry.setClockCycle(clockCycle);
 
+
         // Set the actual instruction to one that was passed
         newIQEntry.setIns(newInstrn);
 
