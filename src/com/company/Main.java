@@ -41,6 +41,7 @@ public class Main {
                     LSQ.SetupLoadStoreQueue();
                     CodeMemory.readFromFile(args[0]);
                     DataMemory.initialize();
+                    CFIDQueue.initialize();
                     Pipeline.Setup();
                     System.out.println("Initialization successful.");
                     break;

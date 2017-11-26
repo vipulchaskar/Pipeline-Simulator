@@ -17,6 +17,7 @@ public class InstructionInfo {
     //private int lsqIndex;
     //private int robIndex;
     private int dispatchedClockCycle;
+    private int CFID;
     private boolean decoded; // TODO: I don't know if this will be required. just keeping it for now.
     private boolean isGonnaSetFlags;
     private boolean flagConsumer;
@@ -251,5 +252,13 @@ public class InstructionInfo {
 
     public void setDispatchedClockCycle(int dispatchedClockCycle) {
         this.dispatchedClockCycle = dispatchedClockCycle;
+    }
+
+    public int getCFID() {
+        return CFID;
+    }
+
+    public void setCFID(int CFID) {
+        this.CFID = CFID;
     }
 }

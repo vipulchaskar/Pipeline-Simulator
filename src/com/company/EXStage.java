@@ -126,7 +126,9 @@ public class EXStage {
                         inputInstruction.isForwardedZeroFlag())) {
 
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
-                            inputInstruction.getPC());
+                            inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
+                    PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+
                 }
 
                 // Latest value of flags is in a physical register & That physical register is not busy &
@@ -136,16 +138,26 @@ public class EXStage {
                         PhysicalRegisterFile.GetZFlag(PhysicalRegisterFile.psw_rename_table)) {
 
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
-                            inputInstruction.getPC());
+                            inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
+                    PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+
                 }
 
                 // Latest value of flags is in architectural register and zero flag is set.
                 else if (!Flags.getBusy() && Flags.getZero()) {
 
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
-                            inputInstruction.getPC());
+                            inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
+                    PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+
                 }
-                PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+
+                else {
+                    // Branch not going to be taken.
+                    int currentCFID = inputInstruction.getCFID();
+                    CFIDQueue.removeFromDispatchedCFID(currentCFID);
+                    CFIDQueue.addToFreeCFID(currentCFID);
+                }
 
                 ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
                 break;
@@ -156,7 +168,9 @@ public class EXStage {
                         !inputInstruction.isForwardedZeroFlag())) {
 
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
-                            inputInstruction.getPC());
+                            inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
+                    PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+
                 }
 
                 // Latest value of flags is in a physical register & That physical register is not busy &
@@ -166,23 +180,33 @@ public class EXStage {
                         !PhysicalRegisterFile.GetZFlag(PhysicalRegisterFile.psw_rename_table)) {
 
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
-                            inputInstruction.getPC());
+                            inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
+                    PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+
                 }
 
                 // Latest value of flags is in architectural register and zero flag is not set.
                 else if (!Flags.getBusy() && !Flags.getZero()) {
 
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
-                            inputInstruction.getPC());
+                            inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
+                    PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+
                 }
-                PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+
+                else {
+                    // Branch not going to be taken.
+                    int currentCFID = inputInstruction.getCFID();
+                    CFIDQueue.removeFromDispatchedCFID(currentCFID);
+                    CFIDQueue.addToFreeCFID(currentCFID);
+                }
 
                 ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
                 break;
 
             case JUMP:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
-                Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getPC());
+                Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
                 PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
 
                 ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
@@ -190,7 +214,7 @@ public class EXStage {
 
             case JAL:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
-                Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getPC());
+                Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
                 PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getPC() + Commons.codeInstructionLength);
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);

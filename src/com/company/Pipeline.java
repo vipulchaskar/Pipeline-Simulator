@@ -5,7 +5,8 @@ public class Pipeline {
     private static boolean halted = false;
     private static boolean branch = false;
     private static int targetAddress;
-    private static int branchInstrAddress;
+    private static int branchClockCycle;
+    private static int branchInstrCFID;
     private static FStage fs;
     private static DRFStage drfs;
     private static EXStage exs;
@@ -32,10 +33,12 @@ public class Pipeline {
         branch = false;
     }
 
-    public static void TakeBranch(int newTargetAddress, int currentInstructionAddress) {
+    public static void TakeBranch(int newTargetAddress, int dispatchedBranchClockCycle, int branchCFID) {
         branch = true;
         targetAddress = newTargetAddress;
-        branchInstrAddress = currentInstructionAddress;
+        branchClockCycle = dispatchedBranchClockCycle;
+        branchInstrCFID = branchCFID;
+
     }
 
     public static boolean IsBranching() {
@@ -54,7 +57,7 @@ public class Pipeline {
 
         for (int i = 1; i <= clockCycles; i++) {
 
-            ROB.commit();
+            ROB.commit(1);
 
             mem3s.execute();
 
@@ -104,7 +107,7 @@ public class Pipeline {
 
             // In case of branching, flush the instructions in DRF and F stage and start fetching from target address
             if (branch) {
-                FlushInstructions(branchInstrAddress);
+                FlushInstructions(branchClockCycle, branchInstrCFID);
                 fs.setNextInstAddress(targetAddress);
                 branch = false;
             }
@@ -242,34 +245,46 @@ public class Pipeline {
         }
     }
 
-    public static void FlushInstructions(int branchInstrAddress) {
+    public static void FlushInstructions(int branchClockCycle, int branchInstrCFID) {
         drfs.outputInstruction = null;
         fs.outputInstruction = null;
 
-        IssueQueue.FlushInstructions(branchInstrAddress);
+        ROB.FlushInstructions(branchClockCycle);
 
-        if (exs.inputInstruction != null && exs.inputInstruction.getPC() > branchInstrAddress)
-            exs.inputInstruction = null;
+        int CFIDindex = CFIDQueue.getIndexOfDispatchedCFID(branchInstrCFID);
 
-        if (mul1s.inputInstruction != null && mul1s.inputInstruction.getPC() > branchInstrAddress)
-            mul1s.inputInstruction = null;
+        for(; CFIDindex < CFIDQueue.dispatchedCFID.size(); CFIDindex ++) {
+            int CFIDtoFlush = CFIDQueue.dispatchedCFID.get(CFIDindex);
 
-        if (mul2s.inputInstruction != null && mul2s.inputInstruction.getPC() > branchInstrAddress)
-            mul2s.inputInstruction = null;
+            IssueQueue.FlushInstructions(CFIDtoFlush);
+            LSQ.FlushInstructions(CFIDtoFlush);
 
-        if (div1s.inputInstruction != null && div1s.inputInstruction.getPC() > branchInstrAddress)
-            div1s.inputInstruction = null;
+            if (exs.inputInstruction != null && exs.inputInstruction.getCFID() == CFIDtoFlush)
+                exs.inputInstruction = null;
 
-        if (div2s.inputInstruction != null && div2s.inputInstruction.getPC() > branchInstrAddress)
-            div2s.inputInstruction = null;
+            if (mul1s.inputInstruction != null && mul1s.inputInstruction.getCFID() == CFIDtoFlush)
+                mul1s.inputInstruction = null;
 
-        if (div3s.inputInstruction != null && div3s.inputInstruction.getPC() > branchInstrAddress)
-            div3s.inputInstruction = null;
+            if (mul2s.inputInstruction != null && mul2s.inputInstruction.getCFID() == CFIDtoFlush)
+                mul2s.inputInstruction = null;
 
-        if (div4s.inputInstruction != null && div4s.inputInstruction.getPC() > branchInstrAddress)
-            div4s.inputInstruction = null;
+            if (div1s.inputInstruction != null && div1s.inputInstruction.getCFID() == CFIDtoFlush)
+                div1s.inputInstruction = null;
 
-        // TODO: Also flush from ROB once it has been implemented? What about LSQ?
+            if (div2s.inputInstruction != null && div2s.inputInstruction.getCFID() == CFIDtoFlush)
+                div2s.inputInstruction = null;
+
+            if (div3s.inputInstruction != null && div3s.inputInstruction.getCFID() == CFIDtoFlush)
+                div3s.inputInstruction = null;
+
+            if (div4s.inputInstruction != null && div4s.inputInstruction.getCFID() == CFIDtoFlush)
+                div4s.inputInstruction = null;
+
+            CFIDQueue.removeFromDispatchedCFID(CFIDtoFlush);
+            CFIDQueue.addToFreeCFID(CFIDtoFlush);
+        }
+
+
     }
 
 

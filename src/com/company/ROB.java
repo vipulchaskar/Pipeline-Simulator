@@ -30,7 +30,7 @@ public class ROB {
             return rob.size()-1;
         }
 
-        public static void commit() {
+        public static void commit(int commitNo) {
 
             if (rob.size() == 0)
                 return;
@@ -64,6 +64,11 @@ public class ROB {
                 }
 
                 rob.remove(head);
+
+                if (commitNo == 1) {
+                    // This was the first instruction commitment. Try committing the following instruction too.
+                    commit(2);
+                }
             }
         }
 
@@ -114,6 +119,14 @@ public class ROB {
             outputString.append(" ]");
 
             return outputString.toString();
+        }
+
+        public static void FlushInstructions(int branchClockCycle) {
+
+            int startIndex = GetInstructionIndexByClockCycle(branchClockCycle);
+
+            for (;startIndex < rob.size(); startIndex++)
+                rob.remove(startIndex);
         }
 
     }

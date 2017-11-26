@@ -64,4 +64,12 @@ public class Commons {
                 ins.getOpCode() == I.STORE);
     }
 
+    public static boolean isBranchInstruction(InstructionInfo ins) {
+
+        return (ins.getOpCode() == I.BZ ||
+                ins.getOpCode() == I.BNZ ||
+                ins.getOpCode() == I.JUMP ||
+                ins.getOpCode() == I.JAL);
+    }
+
 }

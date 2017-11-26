@@ -93,10 +93,10 @@ public class IssueQueue {
         }
     }
 
-    public static void FlushInstructions(int branchInstrAddress) {
+    public static void FlushInstructions(int CFIDtoFlush) {
 
         for (IQEntry instruction : issueQueue) {
-            if (instruction.getIns().getPC() > branchInstrAddress) {
+            if (instruction.getIns().getCFID() == CFIDtoFlush) {
                 issueQueue.remove(instruction);
             }
         }

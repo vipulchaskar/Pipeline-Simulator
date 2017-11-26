@@ -125,10 +125,10 @@ public class LSQ {
         // TODO: Load forwarding.
     }
 
-    public static void FlushInstructions(int branchInstrAddress) {
+    public static void FlushInstructions(int CFIDtoFlush) {
 
         for (LSQEntry instruction : lsq) {
-            if (instruction.getIns().getPC() > branchInstrAddress) {
+            if (instruction.getIns().getCFID() == CFIDtoFlush) {
                 lsq.remove(instruction);
             }
         }

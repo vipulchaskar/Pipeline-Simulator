@@ -190,8 +190,12 @@ public class DRFStage {
             // Either the instruction is not a memory instruction, or if it is, a slot in LSQ is available.
             boolean freeLSQSlotAvailable = (!Commons.isMemoryInstruction(inputInstruction) || !LSQ.isLSQFull());
 
+            // Either the instruction is not a branch instruction, or if it is, a free CFID label is available.
+            boolean freeCFIDAvailable = (!Commons.isBranchInstruction(inputInstruction) || CFIDQueue.isFreeCFIDAvailable());
 
-            if (freePhyRegAvailable && freeIQEntryAvailable && freeROBSlotAvailable && freeLSQSlotAvailable) {
+
+            if (freePhyRegAvailable && freeIQEntryAvailable && freeROBSlotAvailable &&
+                    freeLSQSlotAvailable && freeCFIDAvailable) {
 
                 // Stalling logic satisfied.
                 stalled = false;
@@ -261,6 +265,8 @@ public class DRFStage {
                         inputInstruction.setdRegAddr(newPhyRegAddr);
 
                         // Step h. Taken care of by IssueQueue.add() method.
+
+                        inputInstruction.setCFID(CFIDQueue.lastCFID);
 
                         // Create an ROB entry.
                         ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
@@ -335,6 +341,8 @@ public class DRFStage {
 
                         // Step h. Taken care of by IssueQueue.add() method.
 
+                        inputInstruction.setCFID(CFIDQueue.lastCFID);
+
                         // Create an ROB entry.
                         ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
 
@@ -378,6 +386,8 @@ public class DRFStage {
                         inputInstruction.setdRegAddr(newPhyRegAddr);
 
                         // Step h. Taken care of by IssueQueue.add() method.
+
+                        inputInstruction.setCFID(CFIDQueue.lastCFID);
 
                         // Create an ROB entry.
                         ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
@@ -435,6 +445,8 @@ public class DRFStage {
 
                         // Step h. Taken care of by IssueQueue.add() method.
 
+                        inputInstruction.setCFID(CFIDQueue.lastCFID);
+
                         // Create an ROB entry.
                         // STORE instructions don't have destination registers, so it doesn't matter what we enter as
                         // destination arch and physical registers.
@@ -470,6 +482,8 @@ public class DRFStage {
 
                         // Step h. Taken care of by IssueQueue.add() method.
 
+                        inputInstruction.setCFID(CFIDQueue.lastCFID);
+
                         // Create an ROB entry.
                         ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
 
@@ -480,6 +494,12 @@ public class DRFStage {
                     case BNZ:
                         inputInstruction.setSrc1Forwarded(true);
                         inputInstruction.setSrc2Forwarded(true);
+
+                        int newCFID = CFIDQueue.getFreeCFID();
+                        inputInstruction.setCFID(newCFID);
+                        CFIDQueue.lastCFID = newCFID;
+                        CFIDQueue.addToDispatchedCFID(newCFID);
+
                         PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
 
                         // Create an ROB entry.
@@ -492,6 +512,8 @@ public class DRFStage {
                     case NOOP:
                         inputInstruction.setSrc1Forwarded(true);
                         inputInstruction.setSrc2Forwarded(true);
+
+                        inputInstruction.setCFID(CFIDQueue.lastCFID);
 
                         // Create an ROB entry.
                         ROB.add(inputInstruction, -1, -1, clockCycle);
@@ -534,6 +556,11 @@ public class DRFStage {
 
                         // Take backup of the physical registers and rename table for branch instructions
                         PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
+
+                        newCFID = CFIDQueue.getFreeCFID();
+                        inputInstruction.setCFID(newCFID);
+                        CFIDQueue.lastCFID = newCFID;
+                        CFIDQueue.addToDispatchedCFID(newCFID);
 
                         // Create an ROB entry.
                         ROB.add(inputInstruction, -1, -1, clockCycle);
@@ -581,6 +608,11 @@ public class DRFStage {
 
                         // Take backup of the physical registers and rename table for branch instructions
                         PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
+
+                        newCFID = CFIDQueue.getFreeCFID();
+                        inputInstruction.setCFID(newCFID);
+                        CFIDQueue.lastCFID = newCFID;
+                        CFIDQueue.addToDispatchedCFID(newCFID);
 
                         // Create an ROB entry.
                         ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
