@@ -17,6 +17,7 @@ public class Pipeline {
     private static DIVStage div3s;
     private static DIVStage div4s;
     private static MEM3Stage mem3s;
+    private static InstructionInfo loadForwarded;
 
     public static void Setup() {
         fs = new FStage();
@@ -31,6 +32,7 @@ public class Pipeline {
         mem3s = new MEM3Stage();
         halted = false;
         branch = false;
+        loadForwarded = null;
     }
 
     public static void TakeBranch(int newTargetAddress, int dispatchedBranchClockCycle, int branchCFID) {
@@ -215,6 +217,10 @@ public class Pipeline {
         if (mem3s.outputInstruction != null && mem3s.outputInstruction.getOpCode() == Commons.I.LOAD)
             ForwardToIQandLSQ(mem3s.outputInstruction);
 
+        // Forwarding from LOAD-Forwarded instruction to IQ and LSQ
+        if (loadForwarded != null)
+            ForwardToIQandLSQ(loadForwarded);
+
 
         // Forwarding to instruction in DRF
 
@@ -240,6 +246,13 @@ public class Pipeline {
             if (mem3s.outputInstruction != null && mem3s.outputInstruction.getOpCode() == Commons.I.LOAD)
                 ForwardToDRF(mem3s.outputInstruction, src1, src2);
 
+
+            // Forwarding from LOAD-Forwarded instruction to DRF
+            if (loadForwarded != null)
+                ForwardToDRF(loadForwarded, src1, src2);
+
+            // Set loadForwarded to null because we don't want to again forward it in the next clock cycle.
+            loadForwarded = null;
             // Trigger the stalling logic to see if instruction can be moved ahead after forwarding
             // drfs.StallingLogic();
         }
@@ -287,7 +300,6 @@ public class Pipeline {
 
     }
 
-
     public static void Display() {
         System.out.println("\nContents of Pipeline stages:");
         System.out.println("F stage : " + fs.getCurInstr() + " | " + fs.getCurInstrString());
@@ -317,4 +329,13 @@ public class Pipeline {
 
         System.out.println("----------------------------------");
     }
+
+    public static InstructionInfo getLoadForwarded() {
+        return loadForwarded;
+    }
+
+    public static void setLoadForwarded(InstructionInfo loadForwarded) {
+        Pipeline.loadForwarded = loadForwarded;
+    }
+
 }
