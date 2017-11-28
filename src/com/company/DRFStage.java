@@ -11,6 +11,14 @@ public class DRFStage {
     public boolean exStalled;
     public boolean mulStalled;
 
+    private InstructionInfo addToROBIns;
+    private int addToROBdestArchReg;
+    private int addToROBdestPhyReg;
+    private int addToROBclockCycle;
+
+    private InstructionInfo addToLSQ;
+    private int addToLSQclockCycle;
+
     public DRFStage() {
         stalled = false;
         exStalled = false;
@@ -269,7 +277,11 @@ public class DRFStage {
                         inputInstruction.setCFID(CFIDQueue.lastCFID);
 
                         // Create an ROB entry.
-                        ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
+                        //ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
+                        addToROBIns = inputInstruction;
+                        addToROBdestArchReg = destArchRegAddr;
+                        addToROBdestPhyReg = newPhyRegAddr;
+                        addToROBclockCycle = clockCycle;
 
                         // Arithmetic instruction. Must also make a rename table entry for flags.
                         // Latest value of flags will be found in a physical register (true)
@@ -344,7 +356,11 @@ public class DRFStage {
                         inputInstruction.setCFID(CFIDQueue.lastCFID);
 
                         // Create an ROB entry.
-                        ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
+                        //ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
+                        addToROBIns = inputInstruction;
+                        addToROBdestArchReg = destArchRegAddr;
+                        addToROBdestPhyReg = newPhyRegAddr;
+                        addToROBclockCycle = clockCycle;
 
                         inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
@@ -390,10 +406,16 @@ public class DRFStage {
                         inputInstruction.setCFID(CFIDQueue.lastCFID);
 
                         // Create an ROB entry.
-                        ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
+                        //ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
+                        addToROBIns = inputInstruction;
+                        addToROBdestArchReg = destArchRegAddr;
+                        addToROBdestPhyReg = newPhyRegAddr;
+                        addToROBclockCycle = clockCycle;
 
                         // Create an LSQ entry.
-                        LSQ.add(inputInstruction, clockCycle);
+                        //LSQ.add(inputInstruction, clockCycle);
+                        addToLSQ = inputInstruction;
+                        addToLSQclockCycle = clockCycle;
 
                         inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
@@ -450,10 +472,17 @@ public class DRFStage {
                         // Create an ROB entry.
                         // STORE instructions don't have destination registers, so it doesn't matter what we enter as
                         // destination arch and physical registers.
-                        ROB.add(inputInstruction, -1, -1, clockCycle);
+                        //ROB.add(inputInstruction, -1, -1, clockCycle);
+                        addToROBIns = inputInstruction;
+                        addToROBdestArchReg = -1;
+                        addToROBdestPhyReg = -1;
+                        addToROBclockCycle = clockCycle;
+
 
                         // Create an LSQ entry.
-                        LSQ.add(inputInstruction, clockCycle);
+                        //LSQ.add(inputInstruction, clockCycle);
+                        addToLSQ = inputInstruction;
+                        addToLSQclockCycle = clockCycle;
 
                         inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
@@ -485,7 +514,12 @@ public class DRFStage {
                         inputInstruction.setCFID(CFIDQueue.lastCFID);
 
                         // Create an ROB entry.
-                        ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
+                        //ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
+                        addToROBIns = inputInstruction;
+                        addToROBdestArchReg = destArchRegAddr;
+                        addToROBdestPhyReg = newPhyRegAddr;
+                        addToROBclockCycle = clockCycle;
+
 
                         inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
@@ -503,7 +537,12 @@ public class DRFStage {
                         PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
 
                         // Create an ROB entry.
-                        ROB.add(inputInstruction, -1, -1, clockCycle);
+                        //ROB.add(inputInstruction, -1, -1, clockCycle);
+                        addToROBIns = inputInstruction;
+                        addToROBdestArchReg = -1;
+                        addToROBdestPhyReg = -1;
+                        addToROBclockCycle = clockCycle;
+
 
                         inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
@@ -516,7 +555,12 @@ public class DRFStage {
                         inputInstruction.setCFID(CFIDQueue.lastCFID);
 
                         // Create an ROB entry.
-                        ROB.add(inputInstruction, -1, -1, clockCycle);
+                        //ROB.add(inputInstruction, -1, -1, clockCycle);
+                        addToROBIns = inputInstruction;
+                        addToROBdestArchReg = -1;
+                        addToROBdestPhyReg = -1;
+                        addToROBclockCycle = clockCycle;
+
 
                         inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
@@ -563,7 +607,12 @@ public class DRFStage {
                         CFIDQueue.addToDispatchedCFID(newCFID);
 
                         // Create an ROB entry.
-                        ROB.add(inputInstruction, -1, -1, clockCycle);
+                        //ROB.add(inputInstruction, -1, -1, clockCycle);
+                        addToROBIns = inputInstruction;
+                        addToROBdestArchReg = -1;
+                        addToROBdestPhyReg = -1;
+                        addToROBclockCycle = clockCycle;
+
 
                         inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
@@ -615,7 +664,12 @@ public class DRFStage {
                         CFIDQueue.addToDispatchedCFID(newCFID);
 
                         // Create an ROB entry.
-                        ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
+                        //ROB.add(inputInstruction, destArchRegAddr, newPhyRegAddr, clockCycle);
+                        addToROBIns = inputInstruction;
+                        addToROBdestArchReg = destArchRegAddr;
+                        addToROBdestPhyReg = newPhyRegAddr;
+                        addToROBclockCycle = clockCycle;
+
 
                         inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
@@ -685,6 +739,25 @@ public class DRFStage {
         if ((stalled || exStalled || mulStalled) && inputInstruction != null)
             return "Stalled";
         return "";
+    }
+
+    public void addToROB() {
+        if (addToROBIns != null) {
+            ROB.add(addToROBIns, addToROBdestArchReg, addToROBdestPhyReg, addToROBclockCycle);
+            addToROBIns = null;
+            addToROBdestArchReg = -1;
+            addToROBdestPhyReg = -1;
+            addToROBclockCycle = -1;
+
+        }
+    }
+
+    public void addToLSQ() {
+        if (addToLSQ != null) {
+            LSQ.add(addToLSQ, addToLSQclockCycle);
+            addToLSQ = null;
+            addToLSQclockCycle = -1;
+        }
     }
 
 }

@@ -107,7 +107,7 @@ public class IssueQueue {
         StringBuilder outputString = new StringBuilder("[ ");
 
         for (IQEntry instruction : issueQueue) {
-            outputString.append(instruction.getIns().getInsString());
+            outputString.append(instruction.getIns().getInsString() + ", ");
         }
 
         outputString.append(" ]");

@@ -50,7 +50,7 @@ public class MEM3Stage {
             case STORE:
                 DataMemory.writeToMemory(inputInstruction.getsReg1Val(), inputInstruction.getIntermResult());
 
-                ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
+                //ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
                 break;
 
             case ADD:

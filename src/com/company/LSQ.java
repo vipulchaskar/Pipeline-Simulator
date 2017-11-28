@@ -36,16 +36,21 @@ public class LSQ {
                 + " which has addr:" + String.valueOf(earliestInstruction.getAddress()) + " & " +
                 String.valueOf(earliestInstruction.isAddressReady()));
 
-        // Address should be ready AND (Either instruction should be LOAD, OR, (if it is STORE) source value should be available.
+        // Address should be ready AND (Either instruction should be LOAD, OR, ((if it is STORE) source value should be available
+        // AND instruction at head of ROB should be this STORE).
         if(earliestInstruction.isAddressReady() &&
-                (earliestInstruction.getMemType() == Commons.MemType.LOAD || earliestInstruction.isSrcReady())) {
+                (earliestInstruction.getMemType() == Commons.MemType.LOAD ||
+                        (earliestInstruction.isSrcReady() && earliestInstruction.getClockCycle() == ROB.GetDispatchedClockCycleOfHead()))) {
 
             // Copy the generated address into the InstructionInfo object to be sent to MEM stage.
             earliestInstruction.getIns().setIntermResult(earliestInstruction.getAddress());
 
             // If the instruction type is STORE, copy the value to be STOREd as well.
-            if (earliestInstruction.getMemType() == Commons.MemType.STORE)
+            // Also, mark the entry of this STORE at head of ROB as, ready to commit.
+            if (earliestInstruction.getMemType() == Commons.MemType.STORE) {
                 earliestInstruction.getIns().setsReg1Val(earliestInstruction.getValue());
+                ROB.setStatus(earliestInstruction.getIns().getDispatchedClockCycle(), true);
+            }
 
             lsq.remove(0);
 
@@ -154,6 +159,8 @@ public class LSQ {
             if (forwardingPossible) {
                 // LOAD-Forwarding is possible
 
+                System.out.println("LOAD Forwarding triggered.");
+
                 // Copy the result from STORE which has matching address with ours.
                 bypasserLoad.getIns().setIntermResult(lsq.get(forwardFromIndex).getValue());
 
@@ -172,6 +179,8 @@ public class LSQ {
             }
             else if (storesFound && canBypass) {
                 // LOAD bypassing is possible.
+
+                System.out.println("LOAD bypassing triggered.");
 
                 // Get an index at the front of the LSQ, but behind ready-to-execute LOADs.
                 int destIndex = GetDestIndexForBypasserLoad(bypasserLoad);
@@ -196,7 +205,7 @@ public class LSQ {
         StringBuilder outputString = new StringBuilder("[ ");
 
         for (LSQEntry instruction : lsq) {
-            outputString.append(instruction.getIns().getInsString());
+            outputString.append(instruction.getIns().getInsString() + ", ");
         }
 
         outputString.append(" ]");

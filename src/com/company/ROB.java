@@ -84,6 +84,12 @@ public class ROB {
 
         }
 
+        public static int GetDispatchedClockCycleOfHead() {
+            if (rob.size() == 0)
+                return -1;
+            return rob.get(0).getClockCycle();
+        }
+
         public static void setStatus(int clockCycle, boolean status) {
             rob.get(GetInstructionIndexByClockCycle(clockCycle)).setStatus(status);
         }
@@ -113,7 +119,7 @@ public class ROB {
             StringBuilder outputString = new StringBuilder("[ ");
 
             for (ROBEntry instruction : rob) {
-                outputString.append(instruction.getIns().getInsString());
+                outputString.append(instruction.getIns().getInsString() + ", ");
             }
 
             outputString.append(" ]");

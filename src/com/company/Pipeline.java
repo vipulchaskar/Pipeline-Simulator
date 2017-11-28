@@ -143,9 +143,12 @@ public class Pipeline {
             mul1s.inputInstruction = IssueQueue.getNextInstruction(Commons.FU.MUL);
             exs.inputInstruction = IssueQueue.getNextInstruction(Commons.FU.INT);
 
-            // IQ <-- DRF
-            if (drfs.outputInstruction != null)
+            // IQ, LSQ, ROB <-- DRF
+            if (drfs.outputInstruction != null) {
                 IssueQueue.add(drfs.outputInstruction, i);
+                drfs.addToROB();
+                drfs.addToLSQ();
+            }
 
             // DRF <-- F
             if (! fs.isStalled()) {
