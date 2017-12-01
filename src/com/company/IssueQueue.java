@@ -77,7 +77,14 @@ public class IssueQueue {
         for(IQEntry instruction : issueQueue) {
             if(! instruction.getIns().isRegistersFetched()) {
 
-                if ((!instruction.isSrc1Ready()) && (instruction.getIns().getsReg1Addr() == registerAddress)) {
+                if (Commons.isFlagConsumerInstruction(instruction.getIns()) &&
+                        (!instruction.isSrc1Ready()) && (instruction.getIns().getsReg1Addr() == registerAddress)) {
+                    instruction.getIns().setFlagsForwarded(true);
+                    instruction.getIns().setForwardedZeroFlag(PhysicalRegisterFile.GetZFlag(registerAddress));
+                    instruction.setSrc1Ready(true);
+                    instruction.getIns().setSrc1Forwarded(true);
+                }
+                else if ((!instruction.isSrc1Ready()) && (instruction.getIns().getsReg1Addr() == registerAddress)) {
                     instruction.getIns().setsReg1Val(data);
                     instruction.getIns().setSrc1Forwarded(true);
                     instruction.setSrc1Ready(true);

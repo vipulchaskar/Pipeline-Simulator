@@ -36,6 +36,9 @@ public class PhysicalRegisterFile {
     // in some physical register (true)
     public static boolean psw_rename_table_bit;
 
+    // Stores the clock cycle when last flag producer instruction was dispatched.
+    public static int last_flag_producer_clock_cycle = -1;
+
     private static ArrayList<PhysicalRegister> physicalRegisters = new ArrayList<>();
 
     private static HashMap<Integer, PhysicalRegisterBackup> backups = new HashMap<>();

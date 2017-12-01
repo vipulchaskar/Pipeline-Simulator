@@ -288,6 +288,8 @@ public class DRFStage {
                         PhysicalRegisterFile.psw_rename_table_bit = true;
                         // This is where latest value of flags will be found in case of physical register.
                         PhysicalRegisterFile.psw_rename_table = newPhyRegAddr;
+                        // Store this instruction as the last flag producer instruction.
+                        PhysicalRegisterFile.last_flag_producer_clock_cycle = clockCycle;
 
                         inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
@@ -526,7 +528,28 @@ public class DRFStage {
 
                     case BZ:
                     case BNZ:
-                        inputInstruction.setSrc1Forwarded(true);
+                        /* For branch instructions, src1 will act as flags source.
+                           3 cases-
+                           Flag value available in a physical register and that register is available.
+                           Flag value in a physical register but that register is unavailable.
+                           Flag value in an architectural register.
+                         */
+                        if (PhysicalRegisterFile.psw_rename_table_bit &&
+                                PhysicalRegisterFile.GetRegisterStatus(PhysicalRegisterFile.psw_rename_table)) {
+                            inputInstruction.setForwardedZeroFlag(PhysicalRegisterFile.GetZFlag(PhysicalRegisterFile.psw_rename_table));
+                            inputInstruction.setFlagsForwarded(true);
+                            inputInstruction.setSrc1Forwarded(true);
+                        }
+                        else if (PhysicalRegisterFile.psw_rename_table_bit &&
+                                !PhysicalRegisterFile.GetRegisterStatus(PhysicalRegisterFile.psw_rename_table)) {
+                            inputInstruction.setsReg1Addr(PhysicalRegisterFile.psw_rename_table);
+                            inputInstruction.setSrc1Forwarded(false);
+                        }
+                        else if (!PhysicalRegisterFile.psw_rename_table_bit) {
+                            inputInstruction.setForwardedZeroFlag(RegisterFile.GetRegisterZFlag(PhysicalRegisterFile.psw_rename_table));
+                            inputInstruction.setFlagsForwarded(true);
+                            inputInstruction.setSrc1Forwarded(true);
+                        }
                         inputInstruction.setSrc2Forwarded(true);
 
                         int newCFID = CFIDQueue.getFreeCFID();
@@ -542,7 +565,6 @@ public class DRFStage {
                         addToROBdestArchReg = -1;
                         addToROBdestPhyReg = -1;
                         addToROBclockCycle = clockCycle;
-
 
                         inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;

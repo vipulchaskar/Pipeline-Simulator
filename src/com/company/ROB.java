@@ -57,6 +57,12 @@ public class ROB {
                         PhysicalRegisterFile.rename_table_bit[head.getDest_arch_register()] = false;
                     }
 
+                    if (head.getClockCycle() == PhysicalRegisterFile.last_flag_producer_clock_cycle) {
+                        // This was the last instruction that produced flags. Time to store the flags in arch registers.
+                        PhysicalRegisterFile.psw_rename_table_bit = false;
+                        PhysicalRegisterFile.psw_rename_table = head.getDest_arch_register();
+                    }
+
                     // Free the physical register
                     PhysicalRegisterFile.SetAllocated(head.getDest_phy_register(), false);
                     PhysicalRegisterFile.SetRegisterStatus(head.getDest_phy_register(), false);
@@ -133,6 +139,13 @@ public class ROB {
 
             for (;startIndex < rob.size(); startIndex++)
                 rob.remove(startIndex);
+        }
+
+        public static void RemoveEntry(int dispatchedClockCycle) {
+
+            int victimEntryIndex = GetInstructionIndexByClockCycle(dispatchedClockCycle);
+
+            rob.remove(victimEntryIndex);   // Goodbye dear friend! :'(
         }
 
     }

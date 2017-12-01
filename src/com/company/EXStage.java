@@ -131,7 +131,7 @@ public class EXStage {
 
                 }
 
-                // Latest value of flags is in a physical register & That physical register is not busy &
+                /*// Latest value of flags is in a physical register & That physical register is not busy &
                 // zero flag of that register is true.
                 else if (PhysicalRegisterFile.psw_rename_table_bit &&
                         PhysicalRegisterFile.GetRegisterStatus(PhysicalRegisterFile.psw_rename_table) &&
@@ -150,13 +150,14 @@ public class EXStage {
                             inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
                     PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
 
-                }
+                }*/
 
                 else {
                     // Branch not going to be taken.
                     int currentCFID = inputInstruction.getCFID();
                     CFIDQueue.removeFromDispatchedCFID(currentCFID);
                     CFIDQueue.addToFreeCFID(currentCFID);
+                    // TODO: Delete backup?
                 }
 
                 ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
@@ -173,7 +174,7 @@ public class EXStage {
 
                 }
 
-                // Latest value of flags is in a physical register & That physical register is not busy &
+                /*// Latest value of flags is in a physical register & That physical register is not busy &
                 // zero flag of that register is false.
                 else if (PhysicalRegisterFile.psw_rename_table_bit &&
                         PhysicalRegisterFile.GetRegisterStatus(PhysicalRegisterFile.psw_rename_table) &&
@@ -192,13 +193,14 @@ public class EXStage {
                             inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
                     PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
 
-                }
+                }*/
 
                 else {
                     // Branch not going to be taken.
                     int currentCFID = inputInstruction.getCFID();
                     CFIDQueue.removeFromDispatchedCFID(currentCFID);
                     CFIDQueue.addToFreeCFID(currentCFID);
+                    // TODO: Restore backup?
                 }
 
                 ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);

@@ -72,4 +72,10 @@ public class Commons {
                 ins.getOpCode() == I.JAL);
     }
 
+    public static boolean isFlagConsumerInstruction(InstructionInfo ins) {
+
+        return (ins.getOpCode() == I.BZ ||
+                ins.getOpCode() == I.BNZ);
+    }
+
 }
