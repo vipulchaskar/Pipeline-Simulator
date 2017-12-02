@@ -36,6 +36,7 @@ public class Pipeline {
     }
 
     public static void TakeBranch(int newTargetAddress, int dispatchedBranchClockCycle, int branchCFID) {
+        halted = false;
         branch = true;
         targetAddress = newTargetAddress;
         branchClockCycle = dispatchedBranchClockCycle;

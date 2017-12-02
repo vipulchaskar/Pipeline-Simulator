@@ -68,7 +68,7 @@ public class ROB {
                     PhysicalRegisterFile.SetRegisterStatus(head.getDest_phy_register(), false);
 
                 }
-                
+
                 rob.remove(head);
 
                 if (commitNo == 1) {

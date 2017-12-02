@@ -221,19 +221,17 @@ public class DRFStage {
                     case DIV:
                         int src1PhyRegAddr;
                         int src2PhyRegAddr = -1;
-                        // Step b.
+                        // Step a.
                         // Look up physical register address for source registers
                         src1PhyRegAddr = PhysicalRegisterFile.rename_table[inputInstruction.getsReg1Addr()];
                         if (inputInstruction.getsReg2Addr() != -1) {
                             src2PhyRegAddr = PhysicalRegisterFile.rename_table[inputInstruction.getsReg2Addr()];
                         }
 
-                        // Step b.
-                        // Assign the physical register for destination and update the rename table
+                        // Step b. part 1.
+                        // Assign the physical register for destination
                         int newPhyRegAddr = PhysicalRegisterFile.GetNewPhysicalRegister();
                         int destArchRegAddr = inputInstruction.getdRegAddr();
-                        PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
-                        PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
 
                         // Step c.
                         // Read out the value of source 1
@@ -250,7 +248,7 @@ public class DRFStage {
 
                         // Step c.
                         // Read out the value of source 2
-                        if (inputInstruction.getsReg2Addr() == -1) {
+                        if (inputInstruction.isLiteralPresent()) {
                             // Source 2 is a literal (This case takes care of step e)
                             inputInstruction.setSrc2Forwarded(true);
                         }
@@ -264,6 +262,12 @@ public class DRFStage {
                             inputInstruction.setsReg2Val(PhysicalRegisterFile.ReadFromRegister(src2PhyRegAddr));
                             inputInstruction.setSrc2Forwarded(true);
                         }
+
+                        // Step b. Part 2.
+                        // ... and update the rename table
+                        PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
+                        PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
+
 
                         // Step d.
                         // Set the source register address field to the physical address of the source register.
@@ -302,19 +306,17 @@ public class DRFStage {
                     case OR:
                     case XOR:
                         src2PhyRegAddr = -1;        // Things you do to make compiler happy
-                        // Step b.
+                        // Step a.
                         // Look up physical register address for source registers
                         src1PhyRegAddr = PhysicalRegisterFile.rename_table[inputInstruction.getsReg1Addr()];
                         if (inputInstruction.getsReg2Addr() != -1) {
                             src2PhyRegAddr = PhysicalRegisterFile.rename_table[inputInstruction.getsReg2Addr()];
                         }
 
-                        // Step b.
-                        // Assign the physical register for destination and update the rename table
+                        // Step b. Part 1.
+                        // Assign the physical register for destination
                         newPhyRegAddr = PhysicalRegisterFile.GetNewPhysicalRegister();
                         destArchRegAddr = inputInstruction.getdRegAddr();
-                        PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
-                        PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
 
                         // Step c.
                         // Read out the value of source 1
@@ -331,7 +333,7 @@ public class DRFStage {
 
                         // Step c.
                         // Read out the value of source 2
-                        if (inputInstruction.getsReg2Addr() == -1) {
+                        if (inputInstruction.isLiteralPresent()) {
                             // Source 2 is a literal (This case takes care of step e)
                             inputInstruction.setSrc2Forwarded(true);
                         }
@@ -345,6 +347,11 @@ public class DRFStage {
                             inputInstruction.setsReg2Val(PhysicalRegisterFile.ReadFromRegister(src2PhyRegAddr));
                             inputInstruction.setSrc2Forwarded(true);
                         }
+
+                        // Step b. Part 2.
+                        // and update the rename table
+                        PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
+                        PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
 
                         // Step d.
                         // Set the source register address field to the physical address of the source register.
@@ -372,16 +379,14 @@ public class DRFStage {
                         break;
 
                     case LOAD:
-                        // Step b.
+                        // Step a.
                         // Look up physical register address for source registers
                         src1PhyRegAddr = PhysicalRegisterFile.rename_table[inputInstruction.getsReg1Addr()];
 
-                        // Step b.
-                        // Assign the physical register for destination and update the rename table
+                        // Step b. Part 1
+                        // Assign the physical register for destination
                         newPhyRegAddr = PhysicalRegisterFile.GetNewPhysicalRegister();
                         destArchRegAddr = inputInstruction.getdRegAddr();
-                        PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
-                        PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
 
                         // Step c.
                         // Read out the value of source 1
@@ -395,6 +400,11 @@ public class DRFStage {
                             inputInstruction.setsReg1Val(PhysicalRegisterFile.ReadFromRegister(src1PhyRegAddr));
                             inputInstruction.setSrc1Forwarded(true);
                         }
+
+                        // Step b. Part 2
+                        // and update the rename table
+                        PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
+                        PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
 
                         // Step d.
                         // Set the source register address field to the physical address of the source register.
@@ -427,7 +437,7 @@ public class DRFStage {
                         break;
 
                     case STORE:
-                        // Step b.
+                        // Step a.
                         // Look up physical register address for source registers
                         src1PhyRegAddr = PhysicalRegisterFile.rename_table[inputInstruction.getsReg1Addr()];
                         src2PhyRegAddr = PhysicalRegisterFile.rename_table[inputInstruction.getsReg2Addr()];
@@ -494,7 +504,7 @@ public class DRFStage {
                         break;
 
                     case MOVC:
-                        // Step b.
+                        // Step a.
                         // Look up physical register address for source registers - N.A.
                         // Assign the physical register for destination and update the rename table
                         newPhyRegAddr = PhysicalRegisterFile.GetNewPhysicalRegister();
@@ -591,7 +601,7 @@ public class DRFStage {
                         break;
 
                     case JUMP:
-                        // Step b.
+                        // Step a.
                         // Look up physical register address for source registers
                         src1PhyRegAddr = PhysicalRegisterFile.rename_table[inputInstruction.getsReg1Addr()];
 
@@ -643,16 +653,14 @@ public class DRFStage {
                         break;
 
                     case JAL:
-                        // Step b.
+                        // Step a.
                         // Look up physical register address for source registers
                         src1PhyRegAddr = PhysicalRegisterFile.rename_table[inputInstruction.getsReg1Addr()];
 
-                        // Step b.
-                        // Assign the physical register for destination and update the rename table
+                        // Step b. Part 1
+                        // Assign the physical register for destination
                         newPhyRegAddr = PhysicalRegisterFile.GetNewPhysicalRegister();
                         destArchRegAddr = inputInstruction.getdRegAddr();
-                        PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
-                        PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
 
                         // Step c.
                         // Read out the value of source 1
@@ -666,6 +674,11 @@ public class DRFStage {
                             inputInstruction.setsReg1Val(PhysicalRegisterFile.ReadFromRegister(src1PhyRegAddr));
                             inputInstruction.setSrc1Forwarded(true);
                         }
+
+                        // Step b. Part 2
+                        // ...  and update the rename table
+                        PhysicalRegisterFile.rename_table[inputInstruction.getdRegAddr()] = newPhyRegAddr;
+                        PhysicalRegisterFile.rename_table_bit[inputInstruction.getdRegAddr()] = true;
 
                         // Step d.
                         // Set the source register address field to the physical address of the source register.
