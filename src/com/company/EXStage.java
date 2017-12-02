@@ -127,8 +127,9 @@ public class EXStage {
 
                     System.out.println("Branch is going to be taken!");
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
-                            inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
-                    PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+                            inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID(), inputInstruction.getPC());
+
+                    //PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
 
                 }
 
@@ -173,8 +174,8 @@ public class EXStage {
                     System.out.println("Branch is going to be taken!");
 
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
-                            inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
-                    PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+                            inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID(), inputInstruction.getPC());
+                    //PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
 
                 }
 
@@ -205,7 +206,7 @@ public class EXStage {
                     int currentCFID = inputInstruction.getCFID();
                     CFIDQueue.removeFromDispatchedCFID(currentCFID);
                     CFIDQueue.addToFreeCFID(currentCFID);
-                    // TODO: Restore backup?
+                    // TODO: Delete backup?
                 }
 
                 ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
@@ -213,7 +214,8 @@ public class EXStage {
 
             case JUMP:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
-                Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
+                Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getDispatchedClockCycle(),
+                        inputInstruction.getCFID(), inputInstruction.getPC());
                 PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
 
                 ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
@@ -221,7 +223,8 @@ public class EXStage {
 
             case JAL:
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
-                Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID());
+                Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getDispatchedClockCycle(),
+                        inputInstruction.getCFID(), inputInstruction.getPC());
                 PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getPC() + Commons.codeInstructionLength);
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);

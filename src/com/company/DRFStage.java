@@ -566,8 +566,8 @@ public class DRFStage {
                         }
                         inputInstruction.setSrc2Forwarded(true);
 
+                        inputInstruction.setCFID(CFIDQueue.lastCFID);
                         int newCFID = CFIDQueue.getFreeCFID();
-                        inputInstruction.setCFID(newCFID);
                         CFIDQueue.lastCFID = newCFID;
                         CFIDQueue.addToDispatchedCFID(newCFID);
 
@@ -636,8 +636,8 @@ public class DRFStage {
                         // Take backup of the physical registers and rename table for branch instructions
                         PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
 
+                        inputInstruction.setCFID(CFIDQueue.lastCFID);
                         newCFID = CFIDQueue.getFreeCFID();
-                        inputInstruction.setCFID(newCFID);
                         CFIDQueue.lastCFID = newCFID;
                         CFIDQueue.addToDispatchedCFID(newCFID);
 
@@ -696,8 +696,8 @@ public class DRFStage {
                         // Take backup of the physical registers and rename table for branch instructions
                         PhysicalRegisterFile.takeBackup(inputInstruction.getPC());
 
+                        inputInstruction.setCFID(CFIDQueue.lastCFID);
                         newCFID = CFIDQueue.getFreeCFID();
-                        inputInstruction.setCFID(newCFID);
                         CFIDQueue.lastCFID = newCFID;
                         CFIDQueue.addToDispatchedCFID(newCFID);
 

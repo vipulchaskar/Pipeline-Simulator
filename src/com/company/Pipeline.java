@@ -7,6 +7,7 @@ public class Pipeline {
     private static int targetAddress;
     private static int branchClockCycle;
     private static int branchInstrCFID;
+    private static int branchInstrPC;
     private static FStage fs;
     private static DRFStage drfs;
     private static EXStage exs;
@@ -35,13 +36,13 @@ public class Pipeline {
         loadForwarded = null;
     }
 
-    public static void TakeBranch(int newTargetAddress, int dispatchedBranchClockCycle, int branchCFID) {
+    public static void TakeBranch(int newTargetAddress, int dispatchedBranchClockCycle, int branchCFID, int branchPC) {
         halted = false;
         branch = true;
         targetAddress = newTargetAddress;
         branchClockCycle = dispatchedBranchClockCycle;
         branchInstrCFID = branchCFID;
-
+        branchInstrPC = branchPC;
     }
 
     public static boolean IsBranching() {
@@ -110,6 +111,7 @@ public class Pipeline {
 
             // In case of branching, flush the instructions in DRF and F stage and start fetching from target address
             if (branch) {
+                PhysicalRegisterFile.restoreBackup(branchInstrPC);
                 FlushInstructions(branchClockCycle, branchInstrCFID);
                 fs.setNextInstAddress(targetAddress);
                 branch = false;
@@ -166,6 +168,7 @@ public class Pipeline {
         int destReg = outputInstruction.getdRegAddr();
         int data = outputInstruction.getIntermResult();
         if (destReg != -1) {
+            System.out.println("In ForwardToIQandLSQ , forwarding " + String.valueOf(destReg) + " with value " + String.valueOf(data));
             IssueQueue.GetForwardedData(destReg, data);
             LSQ.GetForwardedData(destReg, data);
         }
@@ -199,9 +202,6 @@ public class Pipeline {
         int src1;
         int src2;
 
-        if (branch)
-            return;
-
         // Forwarding to IQ, LSQ
 
         // Forwarding from EX to IQ, LSQ
@@ -213,8 +213,10 @@ public class Pipeline {
             ForwardToIQandLSQ(mul2s.outputInstruction);
 
         // Forwarding from DIV4 to IQ, LSQ
-        if (div4s.outputInstruction != null && div4s.outputInstruction.getOpCode() != Commons.I.LOAD)
+        if (div4s.outputInstruction != null && div4s.outputInstruction.getOpCode() != Commons.I.LOAD) {
+            System.out.println("Gonna forward from DIV4 to IQ and LSQ :)");
             ForwardToIQandLSQ(div4s.outputInstruction);
+        }
 
         // Forwarding from MEM to IQ, LSQ
         if (mem3s.outputInstruction != null && mem3s.outputInstruction.getOpCode() == Commons.I.LOAD)
@@ -224,6 +226,9 @@ public class Pipeline {
         if (loadForwarded != null)
             ForwardToIQandLSQ(loadForwarded);
 
+        // TODO: This condition is moved here from top of this function. Remove this TODO only when all test cases are working.
+        if (branch)
+            return;
 
         // Forwarding to instruction in DRF
 
@@ -269,7 +274,7 @@ public class Pipeline {
 
         int CFIDindex = CFIDQueue.getIndexOfDispatchedCFID(branchInstrCFID);
 
-        for(; CFIDindex < CFIDQueue.dispatchedCFID.size();) {
+        for(CFIDindex += 1; CFIDindex < CFIDQueue.dispatchedCFID.size();) {
 
             int CFIDtoFlush = CFIDQueue.dispatchedCFID.get(CFIDindex);
 

@@ -136,6 +136,7 @@ public class ROB {
         public static void FlushInstructions(int branchClockCycle) {
 
             int startIndex = GetInstructionIndexByClockCycle(branchClockCycle);
+            startIndex += 1;        // Don't flush the branch instruction entry. Flush all the consecutive entries.
             int remainingInstructions = rob.size() - startIndex;
 
             for (int i=0;i < remainingInstructions; i++) {
