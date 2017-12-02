@@ -587,7 +587,6 @@ public class DRFStage {
                         addToROBdestPhyReg = -1;
                         addToROBclockCycle = clockCycle;
 
-
                         inputInstruction.setDispatchedClockCycle(clockCycle);
                         break;
 
@@ -709,6 +708,7 @@ public class DRFStage {
 
                 // All input operands fetched. Let's give this instruction to output latch.
                 outputInstruction = inputInstruction;
+
             } else {
                 // Interlocking logic not satisfied. Still waiting for IQ or physical registers to get free.
                 stalled = true;
@@ -770,6 +770,7 @@ public class DRFStage {
     public void addToROB() {
         if (addToROBIns != null) {
             ROB.add(addToROBIns, addToROBdestArchReg, addToROBdestPhyReg, addToROBclockCycle);
+
             addToROBIns = null;
             addToROBdestArchReg = -1;
             addToROBdestPhyReg = -1;

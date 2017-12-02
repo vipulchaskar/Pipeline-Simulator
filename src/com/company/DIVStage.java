@@ -37,8 +37,12 @@ public class DIVStage {
             case BZ:
             case BNZ:
             case JUMP:
-            case HALT:
             case NOOP:
+                break;
+
+            case HALT:
+                if (writesResult)
+                    ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
                 break;
 
             case DIV:

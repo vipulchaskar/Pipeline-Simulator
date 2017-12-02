@@ -21,7 +21,7 @@ public class MEM3Stage {
         else if (!stalled && inputInstruction != null) {
             // Got new instruction
             stalled = true;
-            clockCycleNo = 3;
+            clockCycleNo = 2;
             outputInstruction = null;
             return;
         }
@@ -77,7 +77,9 @@ public class MEM3Stage {
         // Let's give this instruction to output latch.
         outputInstruction = inputInstruction;
         stalled = false;
-        inputInstruction = null;
+        //inputInstruction = null;
+
+        //System.out.println("Hii.. MEM now in last clock cycle. Already unstalled and gave outputInstruction :)");
 
     }
 

@@ -1,5 +1,6 @@
 package com.company;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Arrays;
@@ -176,9 +177,30 @@ public class PhysicalRegisterFile {
         return physicalRegisters.get(index).iszFlag();
     }
 
+    private static PhysicalRegister CopyPhysicalRegister(PhysicalRegister src) {
+        PhysicalRegister dest = new PhysicalRegister();
+
+        dest.setValue(src.getValue());
+        dest.setAllocated(src.isAllocated());
+        dest.setRenamed(src.isStatus());
+        dest.setStatus(src.isStatus());
+        dest.setzFlag(src.iszFlag());
+
+        return dest;
+    }
+
+    private static ArrayList<PhysicalRegister> DeepCopyPhysicalRegisters(ArrayList<PhysicalRegister> phyRegs) {
+        ArrayList<PhysicalRegister> clone = new ArrayList<>();
+        for(PhysicalRegister p : phyRegs)
+            clone.add(CopyPhysicalRegister(p));
+
+        return clone;
+    }
+
     public static void takeBackup(int PC) {
-        PhysicalRegisterBackup newBackup = new PhysicalRegisterBackup(rename_table.clone(), rename_table_bit.clone(),
-                psw_rename_table, psw_rename_table_bit, (ArrayList<PhysicalRegister>)physicalRegisters.clone());
+        PhysicalRegisterBackup newBackup = new PhysicalRegisterBackup(Arrays.copyOf(rename_table, rename_table.length),
+                Arrays.copyOf(rename_table_bit, rename_table_bit.length),
+                psw_rename_table, psw_rename_table_bit, DeepCopyPhysicalRegisters(physicalRegisters));
 
         backups.put(PC, newBackup);
     }
