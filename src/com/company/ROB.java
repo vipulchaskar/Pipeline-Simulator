@@ -136,9 +136,13 @@ public class ROB {
         public static void FlushInstructions(int branchClockCycle) {
 
             int startIndex = GetInstructionIndexByClockCycle(branchClockCycle);
+            int remainingInstructions = rob.size() - startIndex;
 
-            for (;startIndex < rob.size(); startIndex++)
+            for (int i=0;i < remainingInstructions; i++) {
+                System.out.println("Currently startIndex is " + String.valueOf(startIndex) + " and ROB size is " + String.valueOf(rob.size()));
+                System.out.println("Looking to see if I can flush ROB entry " + String.valueOf(rob.get(startIndex).getIns().getInsString()));
                 rob.remove(startIndex);
+            }
         }
 
         public static void RemoveEntry(int dispatchedClockCycle) {

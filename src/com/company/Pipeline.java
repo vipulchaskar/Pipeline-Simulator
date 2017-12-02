@@ -269,7 +269,8 @@ public class Pipeline {
 
         int CFIDindex = CFIDQueue.getIndexOfDispatchedCFID(branchInstrCFID);
 
-        for(; CFIDindex < CFIDQueue.dispatchedCFID.size(); CFIDindex ++) {
+        for(; CFIDindex < CFIDQueue.dispatchedCFID.size();) {
+
             int CFIDtoFlush = CFIDQueue.dispatchedCFID.get(CFIDindex);
 
             IssueQueue.FlushInstructions(CFIDtoFlush);
