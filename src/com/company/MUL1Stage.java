@@ -34,7 +34,7 @@ public class MUL1Stage {
                 break;
 
             case MUL:
-                if (inputInstruction.getsReg2Addr() != -1) {
+                if (! inputInstruction.isLiteralPresent()) {
                     inputInstruction.setIntermResult(inputInstruction.getsReg1Val() * inputInstruction.getsReg2Val());
                 }
                 else {

@@ -19,6 +19,7 @@ public class InstructionInfo {
     private int dispatchedClockCycle;
     private int CFID;
     private boolean decoded; // TODO: I don't know if this will be required. just keeping it for now.
+    private boolean literalPresent;
     private boolean isGonnaSetFlags;
     private boolean flagConsumer;
     private boolean registersFetched;
@@ -50,6 +51,7 @@ public class InstructionInfo {
         src2Forwarded = false;
         flagsForwarded = false;
         forwardedZeroFlag = false;
+        literalPresent = false;
     }
 
     public int getPC() {
@@ -261,4 +263,13 @@ public class InstructionInfo {
     public void setCFID(int CFID) {
         this.CFID = CFID;
     }
+
+    public boolean isLiteralPresent() {
+        return literalPresent;
+    }
+
+    public void setLiteralPresent(boolean literalPresent) {
+        this.literalPresent = literalPresent;
+    }
+
 }

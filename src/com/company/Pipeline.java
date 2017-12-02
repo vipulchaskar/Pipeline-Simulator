@@ -155,10 +155,9 @@ public class Pipeline {
                 drfs.inputInstruction = fs.outputInstruction;
                 fs.outputInstruction = null;
             }
-
+            //PhysicalRegisterFile.printAll();
         }
 
-        PhysicalRegisterFile.printAll();
     }
 
     private static void ForwardToIQandLSQ(InstructionInfo outputInstruction) {

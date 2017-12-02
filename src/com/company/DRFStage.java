@@ -98,8 +98,10 @@ public class DRFStage {
                     inputInstruction.setsReg1Addr(getRegAddrFromInsPart(parts[2]));
                     if (parts[3].charAt(0) == '#') {
                         inputInstruction.setLiteral(getLiteralFromLitPart(parts[3]));
+                        inputInstruction.setLiteralPresent(true);
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
+                        inputInstruction.setLiteralPresent(false);
                     }
                     // This is an arithmetic instruction. Evaporate the capability of instructions already in pipeline
                     // to set the flags.
@@ -136,8 +138,10 @@ public class DRFStage {
                     inputInstruction.setsReg1Addr(getRegAddrFromInsPart(parts[2]));
                     if (parts[3].charAt(0) == '#') {
                         inputInstruction.setLiteral(getLiteralFromLitPart(parts[3]));
+                        inputInstruction.setLiteralPresent(true);
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
+                        inputInstruction.setLiteralPresent(false);
                     }
                     inputInstruction.setDecoded(true);
                     break;

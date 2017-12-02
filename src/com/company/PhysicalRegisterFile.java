@@ -2,6 +2,7 @@ package com.company;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Arrays;
 
 class PhysicalRegisterBackup {
     public int [] bak_rename_table;
@@ -193,7 +194,8 @@ public class PhysicalRegisterFile {
     }
 
     public static void printAll() {
-        System.out.println(String.valueOf(rename_table));
+        System.out.println(Arrays.toString(rename_table));
+        System.out.println(Arrays.toString(rename_table_bit));
     }
 
 }

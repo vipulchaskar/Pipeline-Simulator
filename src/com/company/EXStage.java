@@ -22,7 +22,7 @@ public class EXStage {
 
         switch (inputInstruction.getOpCode()) {
             case ADD:
-                if (inputInstruction.getsReg2Addr() != -1) {
+                if (! inputInstruction.isLiteralPresent()) {
                     inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getsReg2Val());
                 }
                 else {
@@ -37,7 +37,7 @@ public class EXStage {
                 break;
 
             case SUB:
-                if (inputInstruction.getsReg2Addr() != -1) {
+                if (! inputInstruction.isLiteralPresent()) {
                     inputInstruction.setIntermResult(inputInstruction.getsReg1Val() - inputInstruction.getsReg2Val());
                 }
                 else {
@@ -79,7 +79,7 @@ public class EXStage {
                 break;
 
             case AND:
-                if (inputInstruction.getsReg2Addr() != -1) {
+                if (! inputInstruction.isLiteralPresent()) {
                     inputInstruction.setIntermResult(inputInstruction.getsReg1Val() & inputInstruction.getsReg2Val());
                 }
                 else {
@@ -93,7 +93,7 @@ public class EXStage {
                 break;
 
             case OR:
-                if (inputInstruction.getsReg2Addr() != -1) {
+                if (! inputInstruction.isLiteralPresent()) {
                     inputInstruction.setIntermResult(inputInstruction.getsReg1Val() | inputInstruction.getsReg2Val());
                 }
                 else {
@@ -107,7 +107,7 @@ public class EXStage {
                 break;
 
             case XOR:
-                if (inputInstruction.getsReg2Addr() != -1) {
+                if (! inputInstruction.isLiteralPresent()) {
                     inputInstruction.setIntermResult(inputInstruction.getsReg1Val() ^ inputInstruction.getsReg2Val());
                 }
                 else {
