@@ -1,6 +1,7 @@
 package com.company;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class IssueQueue {
 
@@ -102,10 +103,13 @@ public class IssueQueue {
 
     public static void FlushInstructions(int CFIDtoFlush) {
 
-        for (IQEntry instruction : issueQueue) {
-            if (instruction.getIns().getCFID() == CFIDtoFlush) {
-                issueQueue.remove(instruction);
-            }
+        Iterator<IQEntry> iterator = issueQueue.iterator();
+
+        while(iterator.hasNext()) {
+
+            IQEntry instruction = iterator.next();
+            if(instruction.getIns().getCFID() == CFIDtoFlush)
+                iterator.remove();
         }
     }
 

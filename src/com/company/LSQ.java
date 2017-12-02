@@ -1,6 +1,7 @@
 package com.company;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class LSQ {
 
@@ -193,10 +194,14 @@ public class LSQ {
 
     public static void FlushInstructions(int CFIDtoFlush) {
 
-        for (LSQEntry instruction : lsq) {
-            if (instruction.getIns().getCFID() == CFIDtoFlush) {
-                lsq.remove(instruction);
-            }
+        Iterator<LSQEntry> iterator = lsq.iterator();
+
+        while(iterator.hasNext()) {
+
+            LSQEntry instruction = iterator.next();
+
+            if (instruction.getIns().getCFID() == CFIDtoFlush)
+                iterator.remove();
         }
     }
 
