@@ -313,8 +313,30 @@ public class PhysicalRegisterFile {
                 break;
         }
 
+        
         return inputInstruction.getRenamedInsString();
     }
 
+    
+    public static String printRenameTableEntries() {
+
+	    StringBuilder outputString = new StringBuilder("");
+	    boolean flag = true;
+	    for (int index = 0; index < Commons.totalRegisters; index++) 
+	    {
+		    if ( rename_table_bit[index] == true )
+		    {
+			    flag = false;
+			    outputString.append("\n* R" + index  + " : P" + rename_table[index] );
+		    }
+	    }
+	    
+	    if ( flag == true )
+	    {
+		    return " Empty";
+	    }
+	    
+	    return outputString.toString();
+    }
 }
 

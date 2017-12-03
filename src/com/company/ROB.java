@@ -125,17 +125,19 @@ public class ROB {
 
         public static String printCurrentInstructions() {
 
-            StringBuilder outputString = new StringBuilder("[ ");
+               StringBuilder outputString = new StringBuilder("");
 
-            for (ROBEntry instruction : rob) {
-                outputString.append(instruction.getIns().getInsString() + ", ");
-            }
+               if ( rob.size() == 0 )
+	        {
+	       	 return " Empty";
+	        }
+               for (ROBEntry instruction : rob) {
+                   outputString.append("\n* (I" + instruction.getIns().getSequenceNo() + ") " + instruction.getIns().getInsString());
+               }
 
-            outputString.append(" ]");
-
-            return outputString.toString();
+               return outputString.toString();
         }
-
+        
         public static void FlushInstructions(int branchClockCycle) {
 
             int startIndex = GetInstructionIndexByClockCycle(branchClockCycle);

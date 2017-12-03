@@ -207,15 +207,18 @@ public class LSQ {
 
     public static String printCurrentInstructions() {
 
-        StringBuilder outputString = new StringBuilder("[ ");
+           StringBuilder outputString = new StringBuilder("");
 
-        for (LSQEntry instruction : lsq) {
-            outputString.append(instruction.getIns().getInsString() + ", ");
-        }
+           if ( lsq.size() == 0 )
+	    {
+	       	 return " Empty";
+	    }
+           
+           for (LSQEntry instruction : lsq) {
+               outputString.append("\n* (I" + instruction.getIns().getSequenceNo() + ") " + instruction.getIns().getInsString());
+           }
 
-        outputString.append(" ]");
-
-        return outputString.toString();
+           return outputString.toString();
     }
 
 }

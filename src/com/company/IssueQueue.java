@@ -115,14 +115,17 @@ public class IssueQueue {
 
     public static String printCurrentInstructions() {
 
-        StringBuilder outputString = new StringBuilder("[ ");
+	        StringBuilder outputString = new StringBuilder("");
 
-        for (IQEntry instruction : issueQueue) {
-            outputString.append(instruction.getIns().getInsString() + ", ");
-        }
+	        if ( issueQueue.size() == 0 )
+	        {
+	       	 return " Empty";
+	        }
+	        for (IQEntry instruction : issueQueue) {
+	            outputString.append("\n* (I" + instruction.getIns().getSequenceNo() + ") " + instruction.getIns().getInsString());
+	        }
 
-        outputString.append(" ]");
-
-        return outputString.toString();
+	        return outputString.toString();
     }
+
 }
