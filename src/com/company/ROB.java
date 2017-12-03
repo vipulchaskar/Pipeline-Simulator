@@ -6,6 +6,9 @@ public class ROB {
 
     private static ArrayList<ROBEntry> rob = new ArrayList<>();
 
+    private static InstructionInfo firstCommittedInstr;
+    private static InstructionInfo secondCommittedInstr;
+
         public static void SetupROB() {
             rob = new ArrayList<>();
         }
@@ -31,6 +34,9 @@ public class ROB {
         }
 
         public static void commit(int commitNo) {
+
+            //firstCommittedInstr = null;
+            //secondCommittedInstr = null;
 
             if (rob.size() == 0)
                 return;
@@ -72,11 +78,20 @@ public class ROB {
                 // To keep track of completed instructions for calculating CPI.
                 Pipeline.incrementInstructionsCompleted();
 
-                rob.remove(head);
 
                 if (commitNo == 1) {
                     // This was the first instruction commitment. Try committing the following instruction too.
+
+                    firstCommittedInstr = head.getIns();
+                    rob.remove(head);
+
                     commit(2);
+                }
+                else {
+                    // This was the second instruction commitment.
+
+                    secondCommittedInstr = head.getIns();
+                    rob.remove(head);
                 }
             }
         }
@@ -156,6 +171,29 @@ public class ROB {
             int victimEntryIndex = GetInstructionIndexByClockCycle(dispatchedClockCycle);
 
             rob.remove(victimEntryIndex);   // Goodbye dear friend! :'(
+        }
+
+        public static void printCommittedInstructions() {
+
+            if (firstCommittedInstr == null && secondCommittedInstr == null) {
+                // no instructions committed. Nothing to do.
+            }
+            else {
+
+                System.out.println("Commit:");
+
+                if (firstCommittedInstr != null) {
+                    System.out.println("* (I" + String.valueOf(firstCommittedInstr.getSequenceNo()) + ") " + firstCommittedInstr.getInsString());
+                    firstCommittedInstr = null;
+                }
+
+                if (secondCommittedInstr != null) {
+                    System.out.println("* (I" + String.valueOf(secondCommittedInstr.getSequenceNo()) + ") " + secondCommittedInstr.getInsString());
+                    secondCommittedInstr = null;
+                }
+
+                System.out.print("\n");
+            }
         }
 
     }

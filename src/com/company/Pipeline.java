@@ -87,14 +87,11 @@ public class Pipeline {
             System.out.println("Cycle " + String.valueOf(i) + ":");
             System.out.println("Fetch       : " + fs.getCurInstr() + " " + fs.getCurInstrString() + " " + fs.getStalledStr());
             System.out.println("DRF         : " + drfs.getCurInstr() + " " + drfs.getCurInstrString() + " " + drfs.getStalledStr() + "\n");
-            
             System.out.println("<RENAME TABLE> : " + PhysicalRegisterFile.printRenameTableEntries() + "\n");
             System.out.println("<IQ> :" + IssueQueue.printCurrentInstructions() + "\n");
             System.out.println("<ROB> :" + ROB.printCurrentInstructions() + "\n");
+            ROB.printCommittedInstructions();
             System.out.println("<LSQ> :" + LSQ.printCurrentInstructions() + "\n");
-            
-            //System.out.println("IQ          : " + IssueQueue.printCurrentInstructions());
-            //System.out.println("LSQ         : " + LSQ.printCurrentInstructions());
             System.out.println("INTFU       : " + exs.getCurInstr() + " " + exs.getCurInstrString() + " " + exs.getStalledStr());
             System.out.println("MUL1        : " + mul1s.getCurInstr() + " " + mul1s.getCurInstrString() + " " + mul1s.getStalledStr());
             System.out.println("MUL2        : " + mul2s.getCurInstr() + " " + mul2s.getCurInstrString() + " " + mul2s.getStalledStr());
@@ -117,7 +114,7 @@ public class Pipeline {
 
             // In case of branching, flush the instructions in DRF and F stage and start fetching from target address
             if (branch) {
-                PhysicalRegisterFile.restoreBackup(branchInstrPC);
+                //PhysicalRegisterFile.restoreBackup(branchInstrPC);
                 FlushInstructions(branchClockCycle, branchInstrCFID);
                 fs.setNextInstAddress(targetAddress);
                 branch = false;
