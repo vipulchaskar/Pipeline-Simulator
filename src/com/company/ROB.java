@@ -69,6 +69,9 @@ public class ROB {
 
                 }
 
+                // To keep track of completed instructions for calculating CPI.
+                Pipeline.incrementInstructionsCompleted();
+
                 rob.remove(head);
 
                 if (commitNo == 1) {

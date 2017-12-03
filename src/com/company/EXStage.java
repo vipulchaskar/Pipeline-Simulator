@@ -216,7 +216,7 @@ public class EXStage {
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
                 Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getDispatchedClockCycle(),
                         inputInstruction.getCFID(), inputInstruction.getPC());
-                PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+                //PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
 
                 ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
                 break;
@@ -225,11 +225,11 @@ public class EXStage {
                 inputInstruction.setIntermResult(inputInstruction.getsReg1Val() + inputInstruction.getLiteral());
                 Pipeline.TakeBranch(inputInstruction.getIntermResult(), inputInstruction.getDispatchedClockCycle(),
                         inputInstruction.getCFID(), inputInstruction.getPC());
-                PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
+                //PhysicalRegisterFile.restoreBackup(inputInstruction.getPC());
                 PhysicalRegisterFile.WriteToRegister(inputInstruction.getdRegAddr(), inputInstruction.getPC() + Commons.codeInstructionLength);
                 PhysicalRegisterFile.SetRegisterStatus(inputInstruction.getdRegAddr(), true);
 
-                ROB.setResult(inputInstruction.getDispatchedClockCycle(), inputInstruction.getIntermResult());
+                ROB.setResult(inputInstruction.getDispatchedClockCycle(), inputInstruction.getPC() + Commons.codeInstructionLength);
                 ROB.setStatus(inputInstruction.getDispatchedClockCycle(), true);
                 break;
 

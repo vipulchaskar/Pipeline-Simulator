@@ -4,6 +4,7 @@ public class Pipeline {
 
     private static boolean halted = false;
     private static boolean branch = false;
+    private static int instructionsCompleted;
     private static int targetAddress;
     private static int branchClockCycle;
     private static int branchInstrCFID;
@@ -160,6 +161,10 @@ public class Pipeline {
             }
             //PhysicalRegisterFile.printAll();
         }
+
+        System.out.println("Clock cycles simulated      : " + String.valueOf(clockCycles));
+        System.out.println("Instructions completed      : " + String.valueOf(instructionsCompleted));
+        System.out.println("CPI                         : " + String.valueOf((float)clockCycles/instructionsCompleted));
 
     }
 
@@ -324,7 +329,23 @@ public class Pipeline {
 
         System.out.println("----------------------------------");
 
-        System.out.println("Registers:");
+        System.out.println("Rename Table:");
+        System.out.println("In Phy Reg  | Register Address");
+        for (int i = 0; i < Commons.totalRegisters; i++)
+            System.out.println(String.valueOf(PhysicalRegisterFile.rename_table_bit[i]) + "       | " + String.valueOf(PhysicalRegisterFile.rename_table[i]));
+
+        System.out.println("----------------------------------");
+
+        System.out.println("Physical Registers:");
+        System.out.println("Value           | Allocated    | Status");
+        for (int i = 0; i < Commons.totalPhysicalRegisters; i++) {
+            System.out.println("P" + String.valueOf(i) + "  : " + String.valueOf(PhysicalRegisterFile.ReadFromRegister(i)) + "      | "
+            + String.valueOf(PhysicalRegisterFile.GetAllocated(i)) + "      | " + String.valueOf(PhysicalRegisterFile.GetRegisterStatus(i)));
+        }
+
+        System.out.println("----------------------------------");
+
+        System.out.println("Architectural Registers:");
         for (int i = 0; i < Commons.totalRegisters; i++) {
             System.out.println("R" + String.valueOf(i) + ": " + String.valueOf(RegisterFile.ReadFromRegister(i)));
         }
@@ -333,8 +354,11 @@ public class Pipeline {
 
         System.out.println("Memory locations:");
         for (int i = 0; i < 100; i++) {
-            System.out.println("Mem[" + String.valueOf(i) + "] = " + String.valueOf(DataMemory.readFromMemory(i*Commons.dataAddressLength)));
+            System.out.print("Mem[" + String.valueOf(i) + "] = " + String.valueOf(DataMemory.readFromMemory(i*Commons.dataAddressLength)) + "\t");
+            if (i%5 == 0 && i!=0)
+                System.out.println("\n");
         }
+        System.out.println("\n");
 
         System.out.println("----------------------------------");
     }
@@ -347,4 +371,15 @@ public class Pipeline {
         Pipeline.loadForwarded = loadForwarded;
     }
 
+    public static int getInstructionsCompleted() {
+        return instructionsCompleted;
+    }
+
+    public static void setInstructionsCompleted(int instructionsCompleted) {
+        Pipeline.instructionsCompleted = instructionsCompleted;
+    }
+
+    public static void incrementInstructionsCompleted() {
+        instructionsCompleted++;
+    }
 }
