@@ -85,19 +85,20 @@ public class Pipeline {
             fs.execute();
 
             System.out.println("Cycle " + String.valueOf(i) + ":");
-            System.out.println("Fetch       : " + fs.getCurInstr() + " " + fs.getCurInstrString() + " " + fs.getStalledStr());
-            System.out.println("DRF         : " + drfs.getCurInstr() + " " + drfs.getCurInstrString() + " " + drfs.getStalledStr());
-            System.out.println("IQ          : " + IssueQueue.printCurrentInstructions());
-            System.out.println("LSQ         : " + LSQ.printCurrentInstructions());
-            System.out.println("INTFU       : " + exs.getCurInstr() + " " + exs.getCurInstrString() + " " + exs.getStalledStr());
-            System.out.println("MUL1        : " + mul1s.getCurInstr() + " " + mul1s.getCurInstrString() + " " + mul1s.getStalledStr());
-            System.out.println("MUL2        : " + mul2s.getCurInstr() + " " + mul2s.getCurInstrString() + " " + mul2s.getStalledStr());
-            System.out.println("DIV1        : " + div1s.getCurInstr() + " " + div1s.getCurInstrString() + " " + div1s.getStalledStr());
-            System.out.println("DIV2        : " + div2s.getCurInstr() + " " + div2s.getCurInstrString() + " " + div2s.getStalledStr());
-            System.out.println("DIV3        : " + div3s.getCurInstr() + " " + div3s.getCurInstrString() + " " + div3s.getStalledStr());
-            System.out.println("DIV4        : " + div4s.getCurInstr() + " " + div4s.getCurInstrString() + " " + div4s.getStalledStr());
-            System.out.println("MEM         : " + mem3s.getCurInstr() + " " + mem3s.getCurInstrString() + " " + mem3s.getStalledStr());
-            System.out.println("ROB         : " + ROB.printCurrentInstructions());
+            System.out.println("FETCH        : " + fs.getCurInstr() + " " + fs.getCurInstrString() + " " + fs.getStalledStr());
+            System.out.println("DRF          : " + drfs.getCurInstr() + " " + drfs.getCurInstrString() + " " + drfs.getStalledStr());
+            PhysicalRegisterFile.displayRenameTable();
+            System.out.println("IQ           : " + IssueQueue.printCurrentInstructions());
+            System.out.println("ROB          : " + ROB.printCurrentInstructions());
+            System.out.println("LSQ          : " + LSQ.printCurrentInstructions());
+            System.out.println("INTFU        : " + exs.getCurInstr() + " " + exs.getCurInstrString() + " " + exs.getStalledStr());
+            System.out.println("MUL1         : " + mul1s.getCurInstr() + " " + mul1s.getCurInstrString() + " " + mul1s.getStalledStr());
+            System.out.println("MUL2         : " + mul2s.getCurInstr() + " " + mul2s.getCurInstrString() + " " + mul2s.getStalledStr());
+            System.out.println("DIV1         : " + div1s.getCurInstr() + " " + div1s.getCurInstrString() + " " + div1s.getStalledStr());
+            System.out.println("DIV2         : " + div2s.getCurInstr() + " " + div2s.getCurInstrString() + " " + div2s.getStalledStr());
+            System.out.println("DIV3         : " + div3s.getCurInstr() + " " + div3s.getCurInstrString() + " " + div3s.getStalledStr());
+            System.out.println("DIV4         : " + div4s.getCurInstr() + " " + div4s.getCurInstrString() + " " + div4s.getStalledStr());
+            System.out.println("MEM          : " + mem3s.getCurInstr() + " " + mem3s.getCurInstrString() + " " + mem3s.getStalledStr());
             System.out.println("");
 
             DataForwarding();

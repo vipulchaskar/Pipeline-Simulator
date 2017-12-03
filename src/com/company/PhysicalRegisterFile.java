@@ -220,5 +220,101 @@ public class PhysicalRegisterFile {
         System.out.println(Arrays.toString(rename_table_bit));
     }
 
+    public static String renameInstruction(InstructionInfo inputInstruction) {
+
+        switch (inputInstruction.getOpCode()) {
+
+            case ADD:
+            case SUB:
+            case MUL:
+            case DIV:
+            case AND:
+            case OR:
+            case XOR:
+                inputInstruction.appendToRenamedInsString("P" + String.valueOf(inputInstruction.getdRegAddr()) + ",");
+
+                if (inputInstruction.getsReg1Addr() != -1)
+                    inputInstruction.appendToRenamedInsString("P" + String.valueOf(inputInstruction.getsReg1Addr()) + ",");
+                else
+                    inputInstruction.appendToRenamedInsString("R" + String.valueOf(inputInstruction.getSrc1()) + ",");
+
+                if (inputInstruction.isLiteralPresent()) {
+                    inputInstruction.appendToRenamedInsString("#" + String.valueOf(inputInstruction.getLiteral()));
+                }
+                else {
+                    if (inputInstruction.getsReg2Addr() != -1)
+                        inputInstruction.appendToRenamedInsString("P" + String.valueOf(inputInstruction.getsReg2Addr()));
+                    else
+                        inputInstruction.appendToRenamedInsString("R" + String.valueOf(inputInstruction.getSrc2()) + ",");
+                }
+
+                break;
+
+            case LOAD:
+                inputInstruction.appendToRenamedInsString("P" + String.valueOf(inputInstruction.getdRegAddr()) + ",");
+
+                if (inputInstruction.getsReg1Addr() != -1)
+                    inputInstruction.appendToRenamedInsString("P" + String.valueOf(inputInstruction.getsReg1Addr()) + ",");
+                else
+                    inputInstruction.appendToRenamedInsString("R" + String.valueOf(inputInstruction.getSrc1()) + ",");
+
+                inputInstruction.appendToRenamedInsString("#" + String.valueOf(inputInstruction.getLiteral()));
+                break;
+
+            case STORE:
+                if (inputInstruction.getsReg1Addr() != -1)
+                    inputInstruction.appendToRenamedInsString("P" + String.valueOf(inputInstruction.getsReg1Addr()) + ",");
+                else
+                    inputInstruction.appendToRenamedInsString("R" + String.valueOf(inputInstruction.getSrc1()) + ",");
+
+                if (inputInstruction.getsReg2Addr() != -1)
+                    inputInstruction.appendToRenamedInsString("P" + String.valueOf(inputInstruction.getsReg2Addr()) + ",");
+                else
+                    inputInstruction.appendToRenamedInsString("R" + String.valueOf(inputInstruction.getSrc2()) + ",");
+
+                inputInstruction.appendToRenamedInsString("#" + String.valueOf(inputInstruction.getLiteral()));
+                break;
+
+            case MOVC:
+                inputInstruction.appendToRenamedInsString("P" + String.valueOf(inputInstruction.getdRegAddr()) + ",");
+                inputInstruction.appendToRenamedInsString("#" + String.valueOf(inputInstruction.getLiteral()));
+                break;
+
+            case BZ:
+            case BNZ:
+                inputInstruction.appendToRenamedInsString("#" + String.valueOf(inputInstruction.getLiteral()));
+                break;
+
+            case HALT:
+            case NOOP:
+                break;
+
+            case JUMP:
+                if (inputInstruction.getsReg1Addr() != -1)
+                    inputInstruction.appendToRenamedInsString("P" + String.valueOf(inputInstruction.getsReg1Addr()) + ",");
+                else
+                    inputInstruction.appendToRenamedInsString("R" + String.valueOf(inputInstruction.getSrc1()) + ",");
+
+                inputInstruction.appendToRenamedInsString("#" + String.valueOf(inputInstruction.getLiteral()));
+                break;
+
+            case JAL:
+                inputInstruction.appendToRenamedInsString("P" + String.valueOf(inputInstruction.getdRegAddr()) + ",");
+
+                if (inputInstruction.getsReg1Addr() != -1)
+                    inputInstruction.appendToRenamedInsString("P" + String.valueOf(inputInstruction.getsReg1Addr()) + ",");
+                else
+                    inputInstruction.appendToRenamedInsString("R" + String.valueOf(inputInstruction.getSrc1()) + ",");
+
+                inputInstruction.appendToRenamedInsString("#" + String.valueOf(inputInstruction.getLiteral()));
+                break;
+
+            default:
+                break;
+        }
+
+        return inputInstruction.getRenamedInsString();
+    }
+
 }
 

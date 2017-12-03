@@ -7,9 +7,11 @@ public class InstructionInfo {
     private int PC;
     private int instrSequenceNo;
     private String insString;
+    private String renamedInsString;
     private I opCode;
     private int sReg1Addr, sReg1Val;
     private int sReg2Addr, sReg2Val;
+    private int src1, src2;
     private int dRegAddr, dRegVal;
     private int intermResult;
     private int memAddr, memData;
@@ -272,4 +274,31 @@ public class InstructionInfo {
         this.literalPresent = literalPresent;
     }
 
+    public int getSrc1() {
+        return src1;
+    }
+
+    public void setSrc1(int src1) {
+        this.src1 = src1;
+    }
+
+    public int getSrc2() {
+        return src2;
+    }
+
+    public void setSrc2(int src2) {
+        this.src2 = src2;
+    }
+
+    public String getRenamedInsString() {
+        return renamedInsString;
+    }
+
+    public void setRenamedInsString(String renamedInsString) {
+        this.renamedInsString = renamedInsString;
+    }
+
+    public void appendToRenamedInsString(String newPart) {
+        this.renamedInsString += newPart;
+    }
 }

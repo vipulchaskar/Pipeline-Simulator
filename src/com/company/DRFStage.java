@@ -51,38 +51,55 @@ public class DRFStage {
             // Populate the decoded instruction opcode
             if (parts[0].equals("ADD")) {
                 inputInstruction.setOpCode(I.ADD);
+                inputInstruction.setRenamedInsString("ADD,");
             } else if (parts[0].equals("SUB")) {
                 inputInstruction.setOpCode(I.SUB);
+                inputInstruction.setRenamedInsString("SUB,");
             } else if (parts[0].equals("ADDC")) {
                 inputInstruction.setOpCode(I.ADDC);
+                inputInstruction.setRenamedInsString("ADDC,");
             } else if (parts[0].equals("MUL")) {
                 inputInstruction.setOpCode(I.MUL);
+                inputInstruction.setRenamedInsString("MUL,");
             } else if (parts[0].equals("DIV")) {
                 inputInstruction.setOpCode(I.DIV);
+                inputInstruction.setRenamedInsString("DIV,");
             } else if (parts[0].equals("LOAD")) {
                 inputInstruction.setOpCode(I.LOAD);
+                inputInstruction.setRenamedInsString("LOAD,");
             } else if (parts[0].equals("STORE")) {
                 inputInstruction.setOpCode(I.STORE);
+                inputInstruction.setRenamedInsString("STORE,");
             } else if (parts[0].equals("MOVC")) {
                 inputInstruction.setOpCode(I.MOVC);
+                inputInstruction.setRenamedInsString("MOVC,");
             } else if (parts[0].equals("BZ")) {
                 inputInstruction.setOpCode(I.BZ);
+                inputInstruction.setRenamedInsString("BZ,");
             } else if (parts[0].equals("BNZ")) {
                 inputInstruction.setOpCode(I.BNZ);
+                inputInstruction.setRenamedInsString("BNZ,");
             } else if (parts[0].equals("JUMP")) {
                 inputInstruction.setOpCode(I.JUMP);
+                inputInstruction.setRenamedInsString("JUMP,");
             } else if (parts[0].equals("HALT")) {
                 inputInstruction.setOpCode(I.HALT);
+                inputInstruction.setRenamedInsString("HALT,");
             } else if (parts[0].equals("AND")) {
                 inputInstruction.setOpCode(I.AND);
+                inputInstruction.setRenamedInsString("AND,");
             } else if (parts[0].equals("OR")) {
                 inputInstruction.setOpCode(I.OR);
+                inputInstruction.setRenamedInsString("OR,");
             } else if (parts[0].equals("XOR") || parts[0].equals("EXOR")) {
                 inputInstruction.setOpCode(I.XOR);
+                inputInstruction.setRenamedInsString("EXOR,");
             } else if (parts[0].equals("NOOP")) {
                 inputInstruction.setOpCode(I.NOOP);
+                inputInstruction.setRenamedInsString("NOOP,");
             } else if (parts[0].equals("JAL")) {
                 inputInstruction.setOpCode(I.JAL);
+                inputInstruction.setRenamedInsString("JAL,");
             } else {
                 System.out.println("Error! Unsupported opCode : " + parts[0] + " found!");
                 return;
@@ -96,10 +113,12 @@ public class DRFStage {
                 case DIV:
                     inputInstruction.setdRegAddr(getRegAddrFromInsPart(parts[1]));
                     inputInstruction.setsReg1Addr(getRegAddrFromInsPart(parts[2]));
+                    inputInstruction.setSrc1(getRegAddrFromInsPart(parts[2]));
                     if (parts[3].charAt(0) == '#') {
                         inputInstruction.setLiteral(getLiteralFromLitPart(parts[3]));
                         inputInstruction.setLiteralPresent(true);
                     } else {
+                        inputInstruction.setSrc2(getRegAddrFromInsPart(parts[3]));
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
                         inputInstruction.setLiteralPresent(false);
                     }
@@ -114,13 +133,16 @@ public class DRFStage {
                 case LOAD:
                     inputInstruction.setdRegAddr(getRegAddrFromInsPart(parts[1]));
                     inputInstruction.setsReg1Addr(getRegAddrFromInsPart(parts[2]));
+                    inputInstruction.setSrc1(getRegAddrFromInsPart(parts[2]));
                     inputInstruction.setLiteral(getLiteralFromLitPart(parts[3]));
                     inputInstruction.setDecoded(true);
                     break;
 
                 case STORE:
                     inputInstruction.setsReg1Addr(getRegAddrFromInsPart(parts[1]));
+                    inputInstruction.setSrc1(getRegAddrFromInsPart(parts[1]));
                     inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[2]));
+                    inputInstruction.setSrc2(getRegAddrFromInsPart(parts[2]));
                     inputInstruction.setLiteral(getLiteralFromLitPart(parts[3]));
                     inputInstruction.setDecoded(true);
                     break;
@@ -136,11 +158,13 @@ public class DRFStage {
                 case XOR:
                     inputInstruction.setdRegAddr(getRegAddrFromInsPart(parts[1]));
                     inputInstruction.setsReg1Addr(getRegAddrFromInsPart(parts[2]));
+                    inputInstruction.setSrc1(getRegAddrFromInsPart(parts[2]));
                     if (parts[3].charAt(0) == '#') {
                         inputInstruction.setLiteral(getLiteralFromLitPart(parts[3]));
                         inputInstruction.setLiteralPresent(true);
                     } else {
                         inputInstruction.setsReg2Addr(getRegAddrFromInsPart(parts[3]));
+                        inputInstruction.setSrc2(getRegAddrFromInsPart(parts[3]));
                         inputInstruction.setLiteralPresent(false);
                     }
                     inputInstruction.setDecoded(true);
@@ -155,6 +179,7 @@ public class DRFStage {
 
                 case JUMP:
                     inputInstruction.setsReg1Addr(getRegAddrFromInsPart(parts[1]));
+                    inputInstruction.setSrc1(getRegAddrFromInsPart(parts[1]));
                     inputInstruction.setLiteral(getLiteralFromLitPart(parts[2]));
                     inputInstruction.setDecoded(true);
                     break;
@@ -171,6 +196,7 @@ public class DRFStage {
                 case JAL:
                     inputInstruction.setdRegAddr(getRegAddrFromInsPart(parts[1]));
                     inputInstruction.setsReg1Addr(getRegAddrFromInsPart(parts[2]));
+                    inputInstruction.setSrc1(getRegAddrFromInsPart(parts[2]));
                     inputInstruction.setLiteral(getLiteralFromLitPart(parts[3]));
                     inputInstruction.setDecoded(true);
                     break;
@@ -717,6 +743,7 @@ public class DRFStage {
                         break;
                 }
 
+                inputInstruction.setInsString(PhysicalRegisterFile.renameInstruction(inputInstruction));
                 //inputInstruction.setRegistersFetched(true);
 
                 // All input operands fetched. Let's give this instruction to output latch.
