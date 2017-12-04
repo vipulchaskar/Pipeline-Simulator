@@ -101,7 +101,7 @@ public class Pipeline {
             System.out.println("DIV4        : " + div4s.getCurInstr() + " " + div4s.getCurInstrString() + " " + div4s.getStalledStr());
             System.out.println("MEM         : " + mem3s.getCurInstr() + " " + mem3s.getCurInstrString() + " " + mem3s.getStalledStr());
             //System.out.println("ROB         : " + ROB.printCurrentInstructions());
-            System.out.println("");
+            System.out.println("================================\n");
             DataForwarding();
 
             // If DRF stage is stalled, Fetch is stalled too.
@@ -175,7 +175,7 @@ public class Pipeline {
         int destReg = outputInstruction.getdRegAddr();
         int data = outputInstruction.getIntermResult();
         if (destReg != -1) {
-            System.out.println("In ForwardToIQandLSQ , forwarding " + String.valueOf(destReg) + " with value " + String.valueOf(data));
+            //System.out.println("In ForwardToIQandLSQ , forwarding " + String.valueOf(destReg) + " with value " + String.valueOf(data));
             IssueQueue.GetForwardedData(destReg, data);
             LSQ.GetForwardedData(destReg, data);
         }
@@ -221,7 +221,7 @@ public class Pipeline {
 
         // Forwarding from DIV4 to IQ, LSQ
         if (div4s.outputInstruction != null && div4s.outputInstruction.getOpCode() != Commons.I.LOAD) {
-            System.out.println("Gonna forward from DIV4 to IQ and LSQ :)");
+            //System.out.println("Gonna forward from DIV4 to IQ and LSQ :)");
             ForwardToIQandLSQ(div4s.outputInstruction);
         }
 

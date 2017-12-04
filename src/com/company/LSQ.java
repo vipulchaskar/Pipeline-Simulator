@@ -33,9 +33,9 @@ public class LSQ {
 
         // Return the first instruction if it has its address computed.
 
-        System.out.println("Looking to see if I can send instruction " + earliestInstruction.getIns().getInsString()
-                + " which has addr:" + String.valueOf(earliestInstruction.getAddress()) + " & " +
-                String.valueOf(earliestInstruction.isAddressReady()));
+        //System.out.println("Looking to see if I can send instruction " + earliestInstruction.getIns().getInsString()
+        //        + " which has addr:" + String.valueOf(earliestInstruction.getAddress()) + " & " +
+        //        String.valueOf(earliestInstruction.isAddressReady()));
 
         // Address should be ready AND (Either instruction should be LOAD, OR, ((if it is STORE) source value should be available
         // AND instruction at head of ROB should be this STORE).
@@ -64,8 +64,8 @@ public class LSQ {
 
     public static void GetForwardedData(int registerAddress, int data) {
 
-        System.out.println("IQ got forward for register " + String.valueOf(registerAddress) + " with data "
-                + String.valueOf(data));
+        //System.out.println("IQ got forward for register " + String.valueOf(registerAddress) + " with data "
+        //        + String.valueOf(data));
 
         for(LSQEntry instruction : lsq) {
 
@@ -92,7 +92,7 @@ public class LSQ {
                 return i;
         }
 
-        System.out.println("Error! No instruction in LSQ for the given clock cycle " + String.valueOf(clockCycle) + " found!");
+        //System.out.println("Error! No instruction in LSQ for the given clock cycle " + String.valueOf(clockCycle) + " found!");
         return -1;
     }
 
@@ -160,7 +160,7 @@ public class LSQ {
             if (forwardingPossible) {
                 // LOAD-Forwarding is possible
 
-                System.out.println("LOAD Forwarding triggered.");
+                //System.out.println("LOAD Forwarding triggered.");
 
                 // Copy the result from STORE which has matching address with ours.
                 bypasserLoad.getIns().setIntermResult(lsq.get(forwardFromIndex).getValue());
@@ -181,7 +181,7 @@ public class LSQ {
             else if (storesFound && canBypass) {
                 // LOAD bypassing is possible.
 
-                System.out.println("LOAD bypassing triggered.");
+                //System.out.println("LOAD bypassing triggered.");
 
                 // Get an index at the front of the LSQ, but behind ready-to-execute LOADs.
                 int destIndex = GetDestIndexForBypasserLoad(bypasserLoad);

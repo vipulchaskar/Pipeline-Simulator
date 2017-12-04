@@ -41,7 +41,7 @@ public class ROB {
             if (rob.size() == 0)
                 return;
             else if (! rob.get(0).isStatus()) {
-                System.out.println("Instruction at head of ROB not ready.");
+                //System.out.println("Instruction at head of ROB not ready.");
                 return;
             }
             else {
@@ -160,8 +160,8 @@ public class ROB {
             int remainingInstructions = rob.size() - startIndex;
 
             for (int i=0;i < remainingInstructions; i++) {
-                System.out.println("Currently startIndex is " + String.valueOf(startIndex) + " and ROB size is " + String.valueOf(rob.size()));
-                System.out.println("Looking to see if I can flush ROB entry " + String.valueOf(rob.get(startIndex).getIns().getInsString()));
+                //System.out.println("Currently startIndex is " + String.valueOf(startIndex) + " and ROB size is " + String.valueOf(rob.size()));
+                //System.out.println("Looking to see if I can flush ROB entry " + String.valueOf(rob.get(startIndex).getIns().getInsString()));
                 rob.remove(startIndex);
             }
         }

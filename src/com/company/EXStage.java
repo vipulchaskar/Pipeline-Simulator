@@ -125,7 +125,7 @@ public class EXStage {
                 if ((inputInstruction.isFlagsForwarded() &&
                         inputInstruction.isForwardedZeroFlag())) {
 
-                    System.out.println("Branch is going to be taken!");
+                    //System.out.println("Branch is going to be taken!");
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
                             inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID(), inputInstruction.getPC());
 
@@ -156,7 +156,7 @@ public class EXStage {
 
                 else {
                     // Branch not going to be taken.
-                    System.out.println("Branch is not going to be taken!");
+                    //System.out.println("Branch is not going to be taken!");
                     int currentCFID = inputInstruction.getCFID();
                     CFIDQueue.removeFromDispatchedCFID(currentCFID);
                     CFIDQueue.addToFreeCFID(currentCFID);
@@ -171,7 +171,7 @@ public class EXStage {
                 if ((inputInstruction.isFlagsForwarded() &&
                         !inputInstruction.isForwardedZeroFlag())) {
 
-                    System.out.println("Branch is going to be taken!");
+                    //System.out.println("Branch is going to be taken!");
 
                     Pipeline.TakeBranch(inputInstruction.getPC() + inputInstruction.getLiteral(),
                             inputInstruction.getDispatchedClockCycle(), inputInstruction.getCFID(), inputInstruction.getPC());
@@ -202,7 +202,7 @@ public class EXStage {
 
                 else {
                     // Branch not going to be taken.
-                    System.out.println("Branch is not going to be taken!");
+                    //System.out.println("Branch is not going to be taken!");
                     int currentCFID = inputInstruction.getCFID();
                     CFIDQueue.removeFromDispatchedCFID(currentCFID);
                     CFIDQueue.addToFreeCFID(currentCFID);

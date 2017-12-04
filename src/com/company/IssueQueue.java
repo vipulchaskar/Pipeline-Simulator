@@ -50,8 +50,8 @@ public class IssueQueue {
         // Return the first instruction which requires the "fuType" FU and has fetched all operands.
         for(IQEntry instruction : issueQueue) {
 
-            System.out.println("Looking to see if I can send instruction " + instruction.getIns().getInsString()
-            + " which has " + String.valueOf(instruction.isSrc1Ready()) + " & " + String.valueOf(instruction.isSrc2Ready()));
+            //System.out.println("Looking to see if I can send instruction " + instruction.getIns().getInsString()
+            //+ " which has " + String.valueOf(instruction.isSrc1Ready()) + " & " + String.valueOf(instruction.isSrc2Ready()));
 
             if(instruction.getFuType() == fuType && instruction.isSrc1Ready() && instruction.isSrc2Ready()
                     && instruction.getClockCycle() < earliestClockCycle) {
@@ -72,8 +72,8 @@ public class IssueQueue {
 
     public static void GetForwardedData(int registerAddress, int data) {
 
-        System.out.println("IQ got forward for register " + String.valueOf(registerAddress) + " with data "
-        + String.valueOf(data));
+        //System.out.println("IQ got forward for register " + String.valueOf(registerAddress) + " with data "
+        //+ String.valueOf(data));
 
         for(IQEntry instruction : issueQueue) {
             if(! instruction.getIns().isRegistersFetched()) {
