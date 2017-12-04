@@ -162,6 +162,18 @@ public class ROB {
             for (int i=0;i < remainingInstructions; i++) {
                 //System.out.println("Currently startIndex is " + String.valueOf(startIndex) + " and ROB size is " + String.valueOf(rob.size()));
                 //System.out.println("Looking to see if I can flush ROB entry " + String.valueOf(rob.get(startIndex).getIns().getInsString()));
+                // TODO: Potentially breaking fix!!!
+                if (Commons.generatesResult(rob.get(startIndex).getIns())) {
+
+                    if (PhysicalRegisterFile.rename_table[rob.get(startIndex).getDest_arch_register()] == rob.get(startIndex).getDest_phy_register()) {
+                        PhysicalRegisterFile.rename_table[rob.get(startIndex).getDest_arch_register()] = -1;
+                        PhysicalRegisterFile.rename_table_bit[rob.get(startIndex).getDest_arch_register()] = false;
+                    }
+
+                    PhysicalRegisterFile.SetAllocated(rob.get(startIndex).getDest_phy_register(), false);
+                    PhysicalRegisterFile.SetRegisterStatus(rob.get(startIndex).getDest_phy_register(), false);
+                }
+
                 rob.remove(startIndex);
             }
         }
