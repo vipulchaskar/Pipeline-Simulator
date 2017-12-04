@@ -33,7 +33,7 @@ public class ROB {
             return rob.size()-1;
         }
 
-        public static void commit(int commitNo) {
+        public static void commit(int commitNo, MEM3Stage mem3s) {
 
             //firstCommittedInstr = null;
             //secondCommittedInstr = null;
@@ -42,6 +42,10 @@ public class ROB {
                 return;
             else if (! rob.get(0).isStatus()) {
                 //System.out.println("Instruction at head of ROB not ready.");
+                return;
+            }
+            // TODO: Last minute change!
+            else if ((rob.get(0).getIns().getOpCode() == Commons.I.HALT) && (mem3s.isStalled() || mem3s.inputInstruction != null)) {
                 return;
             }
             else {
@@ -85,7 +89,7 @@ public class ROB {
                     firstCommittedInstr = head.getIns();
                     rob.remove(head);
 
-                    commit(2);
+                    commit(2, mem3s);
                 }
                 else {
                     // This was the second instruction commitment.

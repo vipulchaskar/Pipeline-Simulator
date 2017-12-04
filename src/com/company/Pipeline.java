@@ -62,7 +62,8 @@ public class Pipeline {
 
         for (int i = 1; i <= clockCycles; i++) {
 
-            ROB.commit(1);
+
+            ROB.commit(1, mem3s);
 
             mem3s.execute();
 
