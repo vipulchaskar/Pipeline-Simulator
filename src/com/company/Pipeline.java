@@ -151,7 +151,8 @@ public class Pipeline {
 
             // IQ, LSQ, ROB <-- DRF
             if (drfs.outputInstruction != null) {
-                IssueQueue.add(drfs.outputInstruction, i);
+                if (drfs.outputInstruction.getOpCode() != Commons.I.HALT)
+                    IssueQueue.add(drfs.outputInstruction, i);
                 drfs.addToROB();
                 drfs.addToLSQ();
             }

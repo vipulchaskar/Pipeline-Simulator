@@ -811,6 +811,9 @@ public class DRFStage {
         if (addToROBIns != null) {
             ROB.add(addToROBIns, addToROBdestArchReg, addToROBdestPhyReg, addToROBclockCycle);
 
+            if (addToROBIns.getOpCode() == I.HALT)
+                ROB.setStatus(addToROBclockCycle, true);
+
             addToROBIns = null;
             addToROBdestArchReg = -1;
             addToROBdestPhyReg = -1;
