@@ -17,11 +17,10 @@ To compile the java files, go to src/com/company and type:
 	$ javac *.java
 
 To run the program, run the following command from src/ directory:
-        $ java com.company.Main <input_file>
+	$ java com.company.Main <input_file>
 e.g.
 	$ java com.company.Main input.txt
 
 inputs/ directory has sample input files. 
 
 On running the program, first select "1. Initialize" from the menu to initialize data structures. Then select "2. Simulate" and enter the number of CPU clock cycles to simulate. It will print out cycle-by-cycle contents of all the stages of pipeline along with related information.
-=====
