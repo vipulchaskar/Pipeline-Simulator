@@ -10,7 +10,6 @@ This program simulates execution of an out-of-order, multi-FU processor pipeline
 * Support for conditional and unconditional branch instructions
 * Support for flag-dependent instructions
 
-=====
 All the source code is placed under src/ directory.
 
 To compile the java files, go to src/com/company and type:
